@@ -1,0 +1,1256 @@
+openapi: 3.0.3
+info:
+  title: KizuNavi API
+  description: エンゲージメントサーベイシステム KizuNavi のAPI仕様書
+  version: 1.0.0
+  contact:
+    name: KizuNavi Development Team
+    email: dev@kizunavi.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080/api
+    description: 開発環境
+  - url: https://api.kizunavi.com/api
+    description: 本番環境
+
+security:
+  - bearerAuth: []
+
+paths:
+  # 認証API
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: ユーザーログイン
+      description: メールアドレス、パスワード、会社名でログインし、JWTトークンを取得
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: ログアウト
+      description: 現在のセッションを終了
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/validate:
+    get:
+      tags:
+        - Authentication
+      summary: トークン検証
+      description: JWTトークンの有効性を検証
+      responses:
+        '200':
+          description: トークン検証結果
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TokenValidationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/reset-password-request:
+    post:
+      tags:
+        - Authentication
+      summary: パスワードリセット要求
+      description: パスワードリセット用のメールを送信
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /auth/reset-password:
+    post:
+      tags:
+        - Authentication
+      summary: パスワードリセット実行
+      description: 新しいパスワードを設定
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetData'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: 現在のユーザー情報取得
+      description: ログイン中のユーザー情報を取得
+      responses:
+        '200':
+          description: ユーザー情報
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # サーベイAPI
+  /surveys:
+    get:
+      tags:
+        - Surveys
+      summary: サーベイ一覧取得
+      description: 会社IDに基づいてサーベイ一覧を取得
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: サーベイ一覧
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Survey'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags:
+        - Surveys
+      summary: サーベイ作成
+      description: 新しいサーベイを作成
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurveyCreateRequest'
+      responses:
+        '201':
+          description: サーベイ作成成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Survey'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /surveys/{surveyId}:
+    get:
+      tags:
+        - Surveys
+      summary: サーベイ詳細取得
+      description: 指定されたサーベイの詳細情報を取得
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: サーベイ詳細
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Survey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /surveys/distribute:
+    post:
+      tags:
+        - Surveys
+      summary: サーベイ配信
+      description: サーベイを対象従業員に配信
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurveyDistributionRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /surveys/{surveyId}/responses:
+    post:
+      tags:
+        - Survey Responses
+      summary: サーベイ回答送信
+      description: サーベイの回答を送信
+      parameters:
+        - name: surveyId
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurveyResponseRequest'
+      responses:
+        '201':
+          description: 回答送信成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SurveyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /surveys/token/{token}:
+    get:
+      tags:
+        - Survey Responses
+      summary: トークンによるサーベイアクセス
+      description: メールリンクのトークンでサーベイにアクセス
+      security: []
+      parameters:
+        - name: token
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: サーベイ情報
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Survey'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /surveys/token/{token}/responses:
+    post:
+      tags:
+        - Survey Responses
+      summary: トークンによる回答送信
+      description: メールリンクのトークンで回答を送信
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurveyResponseRequest'
+      responses:
+        '201':
+          description: 回答送信成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SurveyResponse'
+
+  # 質問管理API
+  /questions:
+    get:
+      tags:
+        - Questions
+      summary: 質問一覧取得
+      description: ページネーション付きで質問一覧を取得
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 質問一覧
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PaginatedQuestions'
+
+  /questions/{questionId}:
+    get:
+      tags:
+        - Questions
+      summary: 質問詳細取得
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 質問詳細
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Question'
+
+  /questions/{questionId}/note:
+    patch:
+      tags:
+        - Questions
+      summary: 注釈更新
+      description: 質問の注釈を更新（マスタ権限のみ）
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+      responses:
+        '200':
+          description: 注釈更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Question'
+
+    delete:
+      tags:
+        - Questions
+      summary: 注釈削除
+      description: 質問の注釈を削除（マスタ権限のみ）
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  # レポート・分析API
+  /reports/dashboard:
+    get:
+      tags:
+        - Reports
+      summary: ダッシュボードメトリクス取得
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ダッシュボードメトリクス
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DashboardMetrics'
+
+  /reports/dashboard/charts:
+    get:
+      tags:
+        - Reports
+      summary: ダッシュボードチャートデータ取得
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: チャートデータ
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChartData'
+
+  /reports/summary:
+    get:
+      tags:
+        - Reports
+      summary: サマリレポート取得
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: implementationDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: サマリレポート
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SummaryReport'
+
+  # 企業・従業員管理API
+  /companies:
+    get:
+      tags:
+        - Companies
+      summary: 企業一覧取得
+      description: マスタ権限のみ利用可能
+      responses:
+        '200':
+          description: 企業一覧
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Company'
+
+    post:
+      tags:
+        - Companies
+      summary: 企業登録
+      description: 新しい企業を登録
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyRegistrationRequest'
+      responses:
+        '201':
+          description: 企業登録成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Company'
+
+  /companies/{companyId}:
+    get:
+      tags:
+        - Companies
+      summary: 企業詳細取得
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 企業詳細
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Company'
+
+  /companies/{companyId}/employees:
+    get:
+      tags:
+        - Employees
+      summary: 従業員一覧取得
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 従業員一覧
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Employee'
+
+    post:
+      tags:
+        - Employees
+      summary: 従業員登録
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeRegistrationRequest'
+      responses:
+        '201':
+          description: 従業員登録成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Employee'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # 共通レスポンス
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: string
+
+    # 認証関連
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+        - companyName
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          example: "password123"
+        companyName:
+          type: string
+          example: "株式会社テスト"
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+        expiresIn:
+          type: integer
+
+    TokenValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        user:
+          $ref: '#/components/schemas/User'
+
+    PasswordResetRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+
+    PasswordResetData:
+      type: object
+      required:
+        - token
+        - newPassword
+        - confirmPassword
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+        confirmPassword:
+          type: string
+
+    # ユーザー関連
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        companyId:
+          type: string
+        role:
+          type: string
+          enum: [master, admin, member]
+
+    # サーベイ関連
+    Survey:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        companyId:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        targetEmployeeCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        publishedAt:
+          type: string
+          format: date-time
+        implementationDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [draft, published, completed]
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+        type:
+          type: string
+          enum: [rating, text]
+        category:
+          type: string
+        note:
+          type: string
+        order:
+          type: integer
+
+    SurveyCreateRequest:
+      type: object
+      required:
+        - title
+        - companyId
+        - deadline
+        - targetEmployeeCount
+      properties:
+        title:
+          type: string
+        companyId:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        targetEmployeeCount:
+          type: integer
+        implementationDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [draft, published]
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+
+    SurveyDistributionRequest:
+      type: object
+      required:
+        - surveyId
+        - targetEmployeeIds
+        - deadline
+      properties:
+        surveyId:
+          type: string
+        targetEmployeeIds:
+          type: array
+          items:
+            type: string
+        deadline:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    SurveyResponseRequest:
+      type: object
+      required:
+        - answers
+      properties:
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+
+    SurveyResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        surveyId:
+          type: string
+        employeeId:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+        submittedAt:
+          type: string
+          format: date-time
+
+    Answer:
+      type: object
+      properties:
+        questionId:
+          type: string
+        value:
+          oneOf:
+            - type: string
+            - type: number
+
+    # 質問管理
+    PaginatedQuestions:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+        currentPage:
+          type: integer
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+        size:
+          type: integer
+
+    # レポート・分析
+    DashboardMetrics:
+      type: object
+      properties:
+        kizunaScore:
+          type: number
+          format: float
+        engagementScore:
+          type: number
+          format: float
+        satisfactionScore:
+          type: number
+          format: float
+        humanCapitalScore:
+          type: number
+          format: float
+        implementationRate:
+          type: number
+          format: float
+        positiveRate:
+          type: number
+          format: float
+        lastSurveyDate:
+          type: string
+
+    ChartData:
+      type: object
+      properties:
+        departmentKizuna:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepartmentScore'
+        categoryKizuna:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryScore'
+        generationKizuna:
+          type: array
+          items:
+            $ref: '#/components/schemas/GenerationScore'
+        tenureKizuna:
+          type: array
+          items:
+            $ref: '#/components/schemas/TenureScore'
+
+    DepartmentScore:
+      type: object
+      properties:
+        name:
+          type: string
+        score:
+          type: number
+          format: float
+
+    CategoryScore:
+      type: object
+      properties:
+        category:
+          type: string
+        score:
+          type: number
+          format: float
+        positiveRate:
+          type: number
+          format: float
+        breakdown:
+          type: object
+
+    GenerationScore:
+      type: object
+      properties:
+        age:
+          type: string
+        score:
+          type: number
+          format: float
+
+    TenureScore:
+      type: object
+      properties:
+        tenure:
+          type: string
+        score:
+          type: number
+          format: float
+
+    SummaryReport:
+      type: object
+      properties:
+        implementationDate:
+          type: string
+          format: date
+        scores:
+          type: object
+          properties:
+            kizunaScore:
+              type: number
+              format: float
+            engagementScore:
+              type: number
+              format: float
+            satisfactionScore:
+              type: number
+              format: float
+            humanCapitalScore:
+              type: number
+              format: float
+        positiveRates:
+          type: object
+          properties:
+            kizunaRate:
+              type: number
+              format: float
+            engagementRate:
+              type: number
+              format: float
+            satisfactionRate:
+              type: number
+              format: float
+            humanCapitalRate:
+              type: number
+              format: float
+
+    # 企業・従業員
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        nameKana:
+          type: string
+        address:
+          type: string
+        postalCode:
+          type: string
+        industry:
+          type: string
+        phoneNumber:
+          type: string
+        email:
+          type: string
+          format: email
+        contractModel:
+          type: string
+        contractDate:
+          type: string
+          format: date
+        paymentCycle:
+          type: string
+        salesPersonIds:
+          type: array
+          items:
+            type: string
+        employees:
+          type: array
+          items:
+            $ref: '#/components/schemas/Employee'
+
+    CompanyRegistrationRequest:
+      type: object
+      required:
+        - name
+        - nameKana
+        - email
+      properties:
+        name:
+          type: string
+        nameKana:
+          type: string
+        address:
+          type: string
+        postalCode:
+          type: string
+        industry:
+          type: string
+        phoneNumber:
+          type: string
+        email:
+          type: string
+          format: email
+        contractModel:
+          type: string
+        contractDate:
+          type: string
+          format: date
+        paymentCycle:
+          type: string
+        salesPersonIds:
+          type: array
+          items:
+            type: string
+        employeeCount:
+          type: integer
+        employees:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeRegistrationRequest'
+
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        companyId:
+          type: string
+        department:
+          type: string
+        gender:
+          type: string
+        nationality:
+          type: string
+        age:
+          type: string
+        tenure:
+          type: string
+        jobType:
+          type: string
+        position:
+          type: string
+        grade:
+          type: string
+        evaluation:
+          type: string
+        location:
+          type: string
+        employmentType:
+          type: string
+        recruitmentType:
+          type: string
+        education:
+          type: string
+        idType:
+          type: string
+          enum: [hr, employee]
+
+    EmployeeRegistrationRequest:
+      type: object
+      required:
+        - email
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        department:
+          type: string
+        gender:
+          type: string
+        nationality:
+          type: string
+        age:
+          type: string
+        tenure:
+          type: string
+        jobType:
+          type: string
+        position:
+          type: string
+        grade:
+          type: string
+        evaluation:
+          type: string
+        location:
+          type: string
+        employmentType:
+          type: string
+        recruitmentType:
+          type: string
+        education:
+          type: string
+        idType:
+          type: string
+          enum: [hr, employee]
+
+  responses:
+    Success:
+      description: 成功
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+
+    BadRequest:
+      description: リクエストエラー
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    example: false
+                  message:
+                    example: "リクエストが正しくありません"
+
+    Unauthorized:
+      description: 認証エラー
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    example: false
+                  message:
+                    example: "認証が必要です"
+
+    Forbidden:
+      description: 権限エラー
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    example: false
+                  message:
+                    example: "この操作を実行する権限がありません"
+
+    NotFound:
+      description: リソース未発見
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    example: false
+                  message:
+                    example: "指定されたリソースが見つかりません"
+
+tags:
+  - name: Authentication
+    description: 認証関連API
+  - name: Surveys
+    description: サーベイ管理API
+  - name: Survey Responses
+    description: サーベイ回答API
+  - name: Questions
+    description: 質問管理API
+  - name: Reports
+    description: レポート・分析API
+  - name: Companies
+    description: 企業管理API
+  - name: Employees
+    description: 従業員管理API 

@@ -1,1 +1,1 @@
-# KizuNavi_Demo
+# KizuNavi
