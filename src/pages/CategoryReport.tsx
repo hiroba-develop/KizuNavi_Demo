@@ -296,9 +296,15 @@ const CategoryReport: React.FC = () => {
               実施日:{" "}
               {selectedPeriod === "2024-04-01"
                 ? "2024年4月1日"
+                : selectedPeriod === "2024-03-01"
+                ? "2024年3月1日"
+                : selectedPeriod === "2024-02-01"
+                ? "2024年2月1日"
                 : selectedPeriod === "2024-01-01"
                 ? "2024年1月1日"
-                : "2023年10月1日"}
+                : selectedPeriod === "2023-10-01"
+                ? "2023年10月1日"
+                : "不明"}
             </div>
           </div>
           <div className="overflow-x-auto">

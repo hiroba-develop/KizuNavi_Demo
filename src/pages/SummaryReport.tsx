@@ -26,9 +26,35 @@ const SummaryReport: React.FC = () => {
       satisfactionScore: { score: 4.9, positiveRate: 75.2 },
       humanCapitalScore: { score: 4.4, positiveRate: 67.8 },
     },
+    "2024-01-01": {
+      kizunaScore: { score: 4.7, positiveRate: 68.1 },
+      engagementScore: { score: 3.9, positiveRate: 63.4 },
+      satisfactionScore: { score: 4.8, positiveRate: 73.8 },
+      humanCapitalScore: { score: 4.3, positiveRate: 66.5 },
+    },
+    "2023-10-01": {
+      kizunaScore: { score: 4.6, positiveRate: 67.2 },
+      engagementScore: { score: 3.8, positiveRate: 62.1 },
+      satisfactionScore: { score: 4.7, positiveRate: 72.6 },
+      humanCapitalScore: { score: 4.2, positiveRate: 65.3 },
+    },
   };
 
-  const currentData = summaryData[selectedPeriod as keyof typeof summaryData];
+  // フォールバックデータを定義
+  const fallbackData = {
+    kizunaScore: { score: 5.0, positiveRate: 70.0 },
+    engagementScore: { score: 4.0, positiveRate: 65.0 },
+    satisfactionScore: { score: 5.0, positiveRate: 75.0 },
+    humanCapitalScore: { score: 4.5, positiveRate: 70.0 },
+  };
+
+  // 安全にデータを取得する関数
+  const getCurrentData = () => {
+    const data = summaryData[selectedPeriod as keyof typeof summaryData];
+    return data || fallbackData;
+  };
+
+  const currentData = getCurrentData();
 
   const metricsData = [
     {
@@ -312,10 +338,10 @@ const SummaryReport: React.FC = () => {
       className="bg-white rounded-lg shadow-sm border overflow-x-auto"
       style={{ borderColor: THEME_COLORS.border }}
     >
-      <div className="p-6">
+      <div className="p-4 sm:p-6 xl:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
-            指標別データ一覧
+          <h2 className="text-xl xl:text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
+            指標別データ
           </h2>
           <div className="text-sm text-gray-600">
             実施日:{" "}
@@ -323,7 +349,13 @@ const SummaryReport: React.FC = () => {
               ? "2024年4月1日"
               : selectedPeriod === "2024-03-01"
               ? "2024年3月1日"
-              : "2024年2月1日"}
+              : selectedPeriod === "2024-02-01"
+              ? "2024年2月1日"
+              : selectedPeriod === "2024-01-01"
+              ? "2024年1月1日"
+              : selectedPeriod === "2023-10-01"
+              ? "2023年10月1日"
+              : "不明"}
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -399,22 +431,14 @@ const SummaryReport: React.FC = () => {
         <CustomerSelector showPeriod={true} />
       </div>
 
-      {/* 指標別データ */}
-      <div
-        className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 xl:p-8"
-        style={{ borderColor: THEME_COLORS.border }}
-      >
-        <h2 className="text-lg sm:text-xl xl:text-2xl font-semibold text-gray-900 mb-4">
-          指標別データ
-        </h2>
-        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 sm:gap-6 xl:gap-8">
-          <BarChart data={metricsData} title="スコア" />
-          <RadarChart data={metricsData} title="ポジティブ割合" />
-        </div>
-      </div>
-
-      {/* Data Table */}
+      {/* Data Table - 1段目 */}
       <DataTable data={metricsData} />
+
+      {/* Charts Grid - 2段目 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+        <BarChart data={metricsData} title="スコア" />
+        <RadarChart data={metricsData} title="ポジティブ割合" />
+      </div>
     </div>
   );
 };

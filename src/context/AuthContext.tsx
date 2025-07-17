@@ -270,9 +270,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const canAccessRoute = (route: string): boolean => {
     if (!user) return false;
 
-    // 従業員IDはダッシュボードと回答画面にアクセス可能
+    // 回答画面は従業員IDと人事IDの両方がアクセス可能
+    if (route === "/survey") {
+      return user.idType === "employee" || user.idType === "hr";
+    }
+
+    // 従業員IDは回答画面以外にはアクセス不可
     if (user.idType === "employee") {
-      return route === "/survey" || route === "/dashboard";
+      return false;
     }
 
     // マスター権限はすべてのページにアクセス可能

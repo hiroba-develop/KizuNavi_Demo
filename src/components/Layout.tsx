@@ -27,16 +27,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
       // ルートパスのリダイレクト処理
-      if (location.pathname === "/" || location.pathname === "/survey") {
-        // すべてのユーザータイプでダッシュボードに遷移
-        navigate("/dashboard");
+      if (location.pathname === "/") {
+        // 従業員IDは回答画面に、その他はダッシュボードに遷移
+        if (user.idType === "employee") {
+          navigate("/survey");
+        } else {
+          navigate("/dashboard");
+        }
         return;
       }
 
       // IDタイプに基づいたリダイレクト
       if (!canAccessRoute(location.pathname)) {
-        // すべてのユーザータイプでダッシュボードに遷移
-        navigate("/dashboard");
+        // 従業員IDは回答画面に、その他はダッシュボードに遷移
+        if (user.idType === "employee") {
+          navigate("/survey");
+        } else {
+          navigate("/dashboard");
+        }
       }
     }
   }, [
@@ -113,20 +121,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Fixed Header */}
       <Header onMenuToggle={handleMenuToggle} />
 
-      {/* Navigation - Only show for non-member users or if member has survey access */}
-      {!isOnlyMember && (
-        <Navigation isOpen={mobileMenuOpen} onClose={handleMenuClose} />
-      )}
+      {/* Navigation - Show for all authenticated users */}
+      <Navigation isOpen={mobileMenuOpen} onClose={handleMenuClose} />
 
       {/* Main Content */}
       <main
-        className={`pt-16 ${
-          !isOnlyMember ? "pb-6 lg:ml-40" : "pb-6"
-        } w-full transition-all duration-300`}
+        className={`pt-16 ${!isOnlyMember ? "pb-20 lg:pb-6 lg:ml-64" : "pb-6"}`}
       >
-        <div className="px-2 py-4 sm:px-4 sm:py-6 lg:pl-0 lg:pr-4 lg:py-6 xl:pl-1 xl:pr-6 xl:py-8 max-w-full overflow-x-hidden">
-          <div className="mx-auto w-full max-w-7xl">
-            {children || <Outlet />}
+        <div className="px-4 py-4 sm:px-6 sm:py-6 lg:pl-4 lg:pr-4 lg:py-6 xl:pl-6 xl:pr-6 xl:py-8 max-w-full overflow-x-hidden w-full">
+          <div className="mx-auto w-full max-w-7xl ">
+            <div className="w-full">{children || <Outlet />}</div>
           </div>
         </div>
       </main>

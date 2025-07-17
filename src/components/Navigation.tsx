@@ -96,10 +96,33 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
     },
   ];
 
+  // Debug: Current user info
+  console.log("Navigation - Current user:", {
+    idType: user?.idType,
+    role: user?.role,
+    permissions: user?.permissions,
+  });
+
   // IDタイプとパーミッションに基づいてナビゲーション項目をフィルタリング
   const visibleItems = navigationItems.filter((item) => {
     // パーミッションチェック
     const hasRequiredPermission = hasPermission(item.permission);
+
+    // 回答画面は人事IDと従業員IDの両方がアクセス可能
+    if (item.href === "/survey") {
+      const canAccess =
+        hasRequiredPermission &&
+        (user?.idType === "hr" || user?.idType === "employee");
+      console.log(
+        `Navigation - Survey item: hasPermission=${hasRequiredPermission}, idType=${user?.idType}, canAccess=${canAccess}`
+      );
+      return canAccess;
+    }
+
+    // 従業員IDは回答画面以外にはアクセス不可
+    if (user?.idType === "employee") {
+      return false;
+    }
 
     // IDタイプチェック
     let hasRequiredIDType = true;
@@ -117,11 +140,6 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       user?.role !== "master" &&
       item.name === "顧客情報"
     ) {
-      return false;
-    }
-
-    // 従業員IDは回答画面のみアクセス可能
-    if (user?.idType === "employee" && item.href !== "/survey") {
       return false;
     }
 

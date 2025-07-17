@@ -59,23 +59,29 @@ const Dashboard: React.FC = () => {
         setMetrics(metricsData);
         setChartData(chartsData);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "データの取得に失敗しました"
-        );
         console.error("Dashboard data fetch error:", err);
 
-        // Fallback to mock data
-        setMetrics({
+        // エラーが発生しても画面を白くしないよう、フォールバックデータを設定
+        const fallbackMetrics = {
           kizunaScore: 5.1,
           engagementScore: 4.3,
           satisfactionScore: 5.5,
           humanCapitalScore: 4.8,
           implementationRate: 88.5,
           positiveRate: 74.2,
-          lastSurveyDate: "2024年4月1日",
-        });
+          lastSurveyDate:
+            selectedPeriod === "2024-04-01"
+              ? "2024年4月1日"
+              : selectedPeriod === "2024-03-01"
+              ? "2024年3月1日"
+              : selectedPeriod === "2024-02-01"
+              ? "2024年2月1日"
+              : selectedPeriod === "2024-01-01"
+              ? "2024年1月1日"
+              : "2023年10月1日",
+        };
 
-        setChartData({
+        const fallbackChartData = {
           departmentKizuna: [
             { name: "営業部", score: 4.8 },
             { name: "人事部", score: 4.2 },
@@ -88,71 +94,78 @@ const Dashboard: React.FC = () => {
           ],
           categoryKizuna: [
             {
-              category: "経営幹部への信頼",
-              score: 4.8,
-              positiveRate: 75.0,
+              category: "コミュニケーション",
+              score: 4.9,
+              positiveRate: 78.5,
               breakdown: {},
             },
             {
-              category: "企業風土",
-              score: 4.2,
-              positiveRate: 68.0,
-              breakdown: {},
-            },
-            {
-              category: "人間関係",
+              category: "やりがい",
               score: 5.1,
-              positiveRate: 82.0,
+              positiveRate: 82.3,
               breakdown: {},
             },
             {
-              category: "仕事のやりがい",
-              score: 4.7,
-              positiveRate: 73.0,
-              breakdown: {},
-            },
-            {
-              category: "事業運営",
-              score: 4.5,
-              positiveRate: 70.0,
-              breakdown: {},
-            },
-            {
-              category: "人事制度",
-              score: 4.0,
-              positiveRate: 65.0,
+              category: "成長機会",
+              score: 4.6,
+              positiveRate: 71.2,
               breakdown: {},
             },
             {
               category: "ワークライフバランス",
-              score: 4.9,
-              positiveRate: 78.0,
+              score: 4.8,
+              positiveRate: 75.9,
               breakdown: {},
             },
             {
-              category: "改革の息吹",
-              score: 4.3,
-              positiveRate: 69.0,
+              category: "職場環境",
+              score: 5.2,
+              positiveRate: 84.1,
+              breakdown: {},
+            },
+            {
+              category: "評価制度",
+              score: 4.4,
+              positiveRate: 68.7,
+              breakdown: {},
+            },
+            {
+              category: "チームワーク",
+              score: 5.0,
+              positiveRate: 80.4,
+              breakdown: {},
+            },
+            {
+              category: "キャリア支援",
+              score: 4.7,
+              positiveRate: 73.6,
               breakdown: {},
             },
           ],
           generationKizuna: [
-            { age: "10代", score: 4.5 },
-            { age: "20代", score: 4.8 },
-            { age: "30代", score: 5.1 },
-            { age: "40代", score: 5.3 },
-            { age: "50代", score: 5.6 },
-            { age: "60代", score: 5.4 },
-            { age: "70代～", score: 5.2 },
+            { age: "20代", score: 4.5 },
+            { age: "30代", score: 4.8 },
+            { age: "40代", score: 5.0 },
+            { age: "50代", score: 4.9 },
           ],
           tenureKizuna: [
-            { tenure: "3年未満", score: 4.6 },
-            { tenure: "3-7年", score: 4.9 },
-            { tenure: "8-13年", score: 5.2 },
-            { tenure: "14-20年", score: 5.4 },
-            { tenure: "20年以上", score: 5.6 },
+            { tenure: "3年未満", score: 4.2 },
+            { tenure: "3-7年", score: 4.7 },
+            { tenure: "8-13年", score: 5.1 },
+            { tenure: "14-20年", score: 4.9 },
+            { tenure: "20年以上", score: 5.0 },
           ],
-        });
+        };
+
+        setMetrics(fallbackMetrics);
+        setChartData(fallbackChartData);
+
+        // エラーメッセージは設定するが、画面は表示し続ける
+        setError(
+          err instanceof Error
+            ? err.message
+            : "データの取得に失敗しました（フォールバックデータを表示中）"
+        );
       } finally {
         setIsLoading(false);
       }
