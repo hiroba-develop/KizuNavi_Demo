@@ -333,7 +333,9 @@ const EmployeeMaster = () => {
     <div className="p-6 w-full">
       {/* Header with customer selector */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">従業員マスタ</h1>
+        <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
+          従業員マスタ
+        </h1>
         <CustomerSelector />
       </div>
 

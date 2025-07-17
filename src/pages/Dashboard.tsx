@@ -219,9 +219,9 @@ const Dashboard: React.FC = () => {
   };
 
   const BarChart = ({ data, title }: { data: any[]; title: string }) => {
-    const width = isMobile ? 400 : 500;
-    const height = isMobile ? 240 : 280;
-    const padding = isMobile ? 40 : 60;
+    const width = isMobile ? 400 : window.innerWidth >= 1536 ? 600 : 500;
+    const height = isMobile ? 240 : window.innerWidth >= 1536 ? 320 : 280;
+    const padding = isMobile ? 40 : window.innerWidth >= 1536 ? 80 : 60;
     const maxValue = 6;
     const chartHeight = height - 2 * padding;
 
@@ -346,10 +346,10 @@ const Dashboard: React.FC = () => {
   };
 
   const RadarChart = ({ data, title }: { data: any[]; title: string }) => {
-    const size = isMobile ? 280 : 360;
+    const size = isMobile ? 280 : window.innerWidth >= 1536 ? 400 : 320;
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = isMobile ? 100 : 130;
+    const radius = size * 0.35;
     const maxValue = 6;
 
     const angleStep = (2 * Math.PI) / data.length;
@@ -488,9 +488,9 @@ const Dashboard: React.FC = () => {
   };
 
   const LineChart = ({ data, title }: { data: any[]; title: string }) => {
-    const width = isMobile ? 400 : 500;
-    const height = isMobile ? 280 : 320;
-    const padding = isMobile ? 40 : 60;
+    const width = isMobile ? 400 : window.innerWidth >= 1536 ? 600 : 500;
+    const height = isMobile ? 280 : window.innerWidth >= 1536 ? 360 : 320;
+    const padding = isMobile ? 40 : window.innerWidth >= 1536 ? 80 : 60;
     const maxValue = 6;
 
     const points = data.map((item, index) => {
@@ -664,7 +664,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Top Row: Metrics and Circular Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Left: Main Metrics and Kizuna Score */}
         <div
           className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
@@ -677,11 +677,13 @@ const Dashboard: React.FC = () => {
                   キズナ度
                 </h3>
                 <div
-                  className="text-2xl sm:text-3xl font-bold"
+                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
                   style={{ color: THEME_COLORS.accent }}
                 >
                   {metrics.kizunaScore}
-                  <span className="text-sm sm:text-lg text-gray-400">/6</span>
+                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
+                    /6
+                  </span>
                 </div>
               </div>
 
@@ -690,11 +692,13 @@ const Dashboard: React.FC = () => {
                   エンゲージメント
                 </h3>
                 <div
-                  className="text-2xl sm:text-3xl font-bold"
+                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
                   style={{ color: THEME_COLORS.main }}
                 >
                   {metrics.engagementScore}
-                  <span className="text-sm sm:text-lg text-gray-400">/6</span>
+                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
+                    /6
+                  </span>
                 </div>
               </div>
             </div>
@@ -702,34 +706,38 @@ const Dashboard: React.FC = () => {
             <div className="space-y-3 sm:space-y-4">
               <div className="text-center">
                 <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                  従業員満足度
+                  満足度
                 </h3>
                 <div
-                  className="text-2xl sm:text-3xl font-bold"
-                  style={{ color: THEME_COLORS.status.success }}
+                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
+                  style={{ color: THEME_COLORS.main }}
                 >
                   {metrics.satisfactionScore}
-                  <span className="text-sm sm:text-lg text-gray-400">/6</span>
+                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
+                    /6
+                  </span>
                 </div>
               </div>
 
               <div className="text-center">
                 <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                  人的資本スコア
+                  人的資本
                 </h3>
                 <div
-                  className="text-2xl sm:text-3xl font-bold"
-                  style={{ color: THEME_COLORS.status.warning }}
+                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
+                  style={{ color: THEME_COLORS.accent }}
                 >
                   {metrics.humanCapitalScore}
-                  <span className="text-sm sm:text-lg text-gray-400">/6</span>
+                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
+                    /6
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right: Circular Charts */}
+        {/* Right: Circular Progress Charts */}
         <div
           className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
@@ -741,7 +749,7 @@ const Dashboard: React.FC = () => {
               </h3>
               <CircularProgress
                 percentage={metrics.implementationRate}
-                size={isMobile ? 100 : 140}
+                size={isMobile ? 100 : window.innerWidth >= 1280 ? 160 : 140}
               />
             </div>
             <div className="flex flex-col items-center justify-center">
@@ -750,7 +758,7 @@ const Dashboard: React.FC = () => {
               </h3>
               <CircularProgress
                 percentage={metrics.positiveRate}
-                size={isMobile ? 100 : 140}
+                size={isMobile ? 100 : window.innerWidth >= 1280 ? 160 : 140}
               />
             </div>
           </div>
@@ -758,7 +766,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Second Row: Department and Generation Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Department Bar Chart */}
         <div
           className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
@@ -777,7 +785,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Third Row: Category and Tenure Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Category Radar Chart */}
         <div
           className="bg-white rounded-lg shadow-sm p-4 sm:p-6"

@@ -54,14 +54,6 @@ const SurveySettings: React.FC = () => {
     },
   ];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setSurveyData((prev) => ({
-      ...prev,
-      [name]: name === "targetEmployeeCount" ? parseInt(value, 10) || 0 : value,
-    }));
-  };
-
   const handleSaveDraft = async () => {
     setIsLoading(true);
     setError("");
@@ -120,126 +112,92 @@ const SurveySettings: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+    <div className="space-y-6 xl:space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+        <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
           アンケート設定
         </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          エンゲージメントアンケートの配信設定を行います
-        </p>
       </div>
 
+      {/* Survey Basic Settings */}
       <div
-        className="bg-white rounded-lg shadow-sm border p-4 md:p-6"
-        style={{ borderColor: THEME_COLORS.border }}
+        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 xl:p-8"
+        style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
       >
-        <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">
-          基本設定
+        <h2 className="text-lg sm:text-xl xl:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
+          アンケート基本設定
         </h2>
-
-        <div className="space-y-4 md:space-y-6">
-          <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              アンケートタイトル <span className="text-red-500">*</span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+          <div className="lg:col-span-2 xl:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              アンケートタイトル
             </label>
             <input
               type="text"
-              id="title"
-              name="title"
-              value={surveyData.title || ""}
-              onChange={handleInputChange}
+              value={surveyData.title}
+              onChange={(e) =>
+                setSurveyData({ ...surveyData, title: e.target.value })
+              }
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{ borderColor: THEME_COLORS.border }}
-              placeholder="例: 2024年第1四半期エンゲージメントアンケート"
-              required
+              placeholder="従業員エンゲージメント調査"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <div>
-              <label
-                htmlFor="deadline"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                回答期限 <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                id="deadline"
-                name="deadline"
-                value={surveyData.deadline || ""}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                style={{ borderColor: THEME_COLORS.border }}
-                min={new Date().toISOString().split("T")[0]}
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="targetEmployeeCount"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                対象従業員数 <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                id="targetEmployeeCount"
-                name="targetEmployeeCount"
-                value={surveyData.targetEmployeeCount || ""}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                style={{ borderColor: THEME_COLORS.border }}
-                min="1"
-                placeholder="50"
-                required
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              回答期限
+            </label>
+            <input
+              type="date"
+              value={surveyData.deadline}
+              onChange={(e) =>
+                setSurveyData({ ...surveyData, deadline: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{ borderColor: THEME_COLORS.border }}
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                作成日
-              </label>
-              <div
-                className="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm text-gray-600"
-                style={{ borderColor: THEME_COLORS.border }}
-              >
-                {surveyData.createdAt
-                  ? new Date(surveyData.createdAt).toLocaleDateString("ja-JP")
-                  : "保存時に自動設定されます"}
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              対象従業員数
+            </label>
+            <input
+              type="number"
+              value={surveyData.targetEmployeeCount}
+              onChange={(e) =>
+                setSurveyData({
+                  ...surveyData,
+                  targetEmployeeCount: parseInt(e.target.value),
+                })
+              }
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{ borderColor: THEME_COLORS.border }}
+              placeholder="100"
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                ステータス
-              </label>
-              <div
-                className="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"
-                style={{ borderColor: THEME_COLORS.border }}
-              >
-                <span
-                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    surveyData.status === "draft"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : surveyData.status === "published"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {surveyData.status === "draft" && "下書き"}
-                  {surveyData.status === "published" && "公開済み"}
-                  {!surveyData.status && "未保存"}
-                </span>
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              ステータス
+            </label>
+            <select
+              value={surveyData.status}
+              onChange={(e) =>
+                setSurveyData({
+                  ...surveyData,
+                  status: e.target.value as "draft" | "published" | "completed",
+                })
+              }
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{ borderColor: THEME_COLORS.border }}
+            >
+              <option value="draft">下書き</option>
+              <option value="published">公開中</option>
+              <option value="completed">終了</option>
+            </select>
           </div>
         </div>
       </div>

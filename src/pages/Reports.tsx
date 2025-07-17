@@ -127,25 +127,27 @@ const Reports: React.FC = () => {
   const DepartmentTable = () => (
     <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
       <div
-        className="px-6 py-4 bg-gray-50 border-b"
+        className="px-4 sm:px-6 xl:px-8 py-4 bg-gray-50 border-b"
         style={{ borderColor: THEME_COLORS.border }}
       >
-        <h3 className="text-lg font-semibold text-gray-900">部署別分析</h3>
+        <h3 className="text-lg xl:text-xl font-semibold text-gray-900">
+          部署別分析
+        </h3>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 sm:px-6 xl:px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 部署
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 sm:px-6 xl:px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Kizuna スコア
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 sm:px-6 xl:px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 回答者数
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 sm:px-6 xl:px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 回答率
               </th>
             </tr>
@@ -153,16 +155,19 @@ const Reports: React.FC = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {mockData.departmentData.map((dept, index) => (
               <tr key={index} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-4 sm:px-6 xl:px-8 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {dept.name}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-4 sm:px-6 xl:px-8 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div
-                      className="w-12 h-2 rounded-full mr-3"
+                      className="w-12 xl:w-16 h-2 rounded-full mr-3"
                       style={{
                         backgroundColor: THEME_COLORS.charts.bar,
-                        width: `${(dept.score / 6) * 48}px`,
+                        width: `${
+                          (dept.score / 6) *
+                          (window.innerWidth >= 1280 ? 64 : 48)
+                        }px`,
                       }}
                     />
                     <span className="text-sm font-medium text-gray-900">
@@ -170,10 +175,10 @@ const Reports: React.FC = () => {
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-4 sm:px-6 xl:px-8 py-4 whitespace-nowrap text-sm text-gray-900">
                   {dept.count}人
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-4 sm:px-6 xl:px-8 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       dept.responseRate >= 90
@@ -197,41 +202,52 @@ const Reports: React.FC = () => {
   const CategoryAnalysis = () => (
     <div className="bg-white rounded-lg shadow-sm border">
       <div
-        className="px-6 py-4 bg-gray-50 border-b"
+        className="px-4 sm:px-6 xl:px-8 py-4 bg-gray-50 border-b"
         style={{ borderColor: THEME_COLORS.border }}
       >
-        <h3 className="text-lg font-semibold text-gray-900">カテゴリ別分析</h3>
+        <h3 className="text-lg xl:text-xl font-semibold text-gray-900">
+          カテゴリ別分析
+        </h3>
       </div>
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="p-4 sm:p-6 xl:p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
           {mockData.categoryAnalysis.map((category, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-4 border rounded-lg"
+              className="p-4 rounded-lg border"
+              style={{ borderColor: THEME_COLORS.border }}
             >
-              <div className="flex-1">
-                <h4 className="text-sm font-medium text-gray-900">
-                  {category.category}
-                </h4>
-                <div className="flex items-center mt-2">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">
+                {category.category}
+              </h4>
+              <div className="flex items-center justify-between">
+                <span
+                  className="text-xl xl:text-2xl font-bold"
+                  style={{ color: THEME_COLORS.accent }}
+                >
+                  {category.score.toFixed(1)}
+                </span>
+                <span
+                  className={`text-sm font-medium ${
+                    category.trend.startsWith("+")
+                      ? "text-green-600"
+                      : category.trend.startsWith("-")
+                      ? "text-red-600"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {category.trend}
+                </span>
+              </div>
+              <div className="mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="w-16 h-2 rounded-full mr-3"
-                    style={{ backgroundColor: category.color }}
+                    className="h-2 rounded-full"
+                    style={{
+                      width: `${(category.score / 6) * 100}%`,
+                      backgroundColor: THEME_COLORS.charts.bar,
+                    }}
                   />
-                  <span className="text-lg font-semibold">
-                    {category.score.toFixed(1)}
-                  </span>
-                  <span
-                    className={`ml-2 text-sm ${
-                      category.trend.startsWith("+")
-                        ? "text-green-600"
-                        : category.trend.startsWith("-")
-                        ? "text-red-600"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    ({category.trend})
-                  </span>
                 </div>
               </div>
             </div>
@@ -246,17 +262,17 @@ const Reports: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900 mb-2">
             分析レポート
           </h1>
-          <p className="text-sm sm:text-base text-gray-600">
+          <p className="text-sm sm:text-base xl:text-lg text-gray-600">
             従業員エンゲージメント調査の詳細な分析結果を表示します
           </p>
         </div>
 
         {/* Filters and Controls */}
-        <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6">
-          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
+        <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 xl:p-8 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4 xl:gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 調査期間
@@ -276,29 +292,19 @@ const Reports: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 表示形式
               </label>
-              <div className="flex space-x-2">
-                {(["summary", "category", "trend"] as const).map((view) => (
-                  <button
-                    key={view}
-                    onClick={() => setSelectedView(view)}
-                    className={`px-3 py-2 text-sm rounded-md transition-colors ${
-                      selectedView === view
-                        ? "text-white"
-                        : "text-gray-600 bg-gray-100 hover:bg-gray-200"
-                    }`}
-                    style={{
-                      backgroundColor:
-                        selectedView === view ? THEME_COLORS.accent : undefined,
-                    }}
-                  >
-                    {view === "summary"
-                      ? "サマリ"
-                      : view === "category"
-                      ? "カテゴリ別"
-                      : "トレンド"}
-                  </button>
-                ))}
-              </div>
+              <select
+                value={selectedView}
+                onChange={(e) =>
+                  setSelectedView(
+                    e.target.value as "summary" | "category" | "trend"
+                  )
+                }
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="summary">サマリー</option>
+                <option value="category">カテゴリ別</option>
+                <option value="trend">トレンド</option>
+              </select>
             </div>
 
             <div className="ml-auto">
@@ -326,7 +332,7 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Summary Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <MetricCard
             title="Kizuna スコア"
             value={mockData.summaryMetrics.kizunaScore.toFixed(1)}
@@ -350,15 +356,15 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+        <div className="space-y-6 sm:space-y-8">
           <DepartmentTable />
           <CategoryAnalysis />
         </div>
 
         {/* Additional Charts Section */}
         <div className="mt-8">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-lg shadow-sm border p-6 xl:p-8">
+            <h3 className="text-lg xl:text-xl font-semibold text-gray-900 mb-4">
               詳細分析
             </h3>
             <div className="text-center py-12 text-gray-500">

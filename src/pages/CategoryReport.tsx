@@ -276,7 +276,7 @@ const CategoryReport: React.FC = () => {
     <div className="space-y-4 sm:space-y-6">
       {/* Header with customer selector */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
           カテゴリ別レポート
         </h1>
         <CustomerSelector showPeriod={true} />
@@ -287,9 +287,9 @@ const CategoryReport: React.FC = () => {
         className="bg-white rounded-lg shadow-sm border overflow-x-auto"
         style={{ borderColor: THEME_COLORS.border }}
       >
-        <div className="p-6">
+        <div className="p-4 sm:p-6 xl:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
+            <h2 className="text-xl xl:text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
               カテゴリ別データ
             </h2>
             <div className="text-sm text-gray-600">

@@ -297,7 +297,7 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
 
       {/* Navigation sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen pt-16 pb-6 transition-transform duration-300 bg-white border-r border-gray-200 w-72 sm:w-64 lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 h-screen pt-16 pb-6 transition-transform duration-300 bg-white border-r border-gray-200 w-64 lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } shadow-lg lg:shadow-none`}
         style={{ borderColor: THEME_COLORS.border }}

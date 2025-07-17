@@ -393,7 +393,7 @@ const SummaryReport: React.FC = () => {
     <div className="space-y-4 sm:space-y-6">
       {/* Header with customer selector */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
           サマリーレポート
         </h1>
         <CustomerSelector showPeriod={true} />
@@ -401,13 +401,13 @@ const SummaryReport: React.FC = () => {
 
       {/* 指標別データ */}
       <div
-        className="bg-white rounded-lg shadow-sm border p-4 sm:p-6"
+        className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 xl:p-8"
         style={{ borderColor: THEME_COLORS.border }}
       >
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
+        <h2 className="text-lg sm:text-xl xl:text-2xl font-semibold text-gray-900 mb-4">
           指標別データ
         </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 sm:gap-6 xl:gap-8">
           <BarChart data={metricsData} title="スコア" />
           <RadarChart data={metricsData} title="ポジティブ割合" />
         </div>

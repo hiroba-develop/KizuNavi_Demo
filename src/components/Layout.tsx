@@ -121,11 +121,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Main Content */}
       <main
         className={`pt-16 ${
-          !isOnlyMember ? "pb-6 lg:ml-64" : "pb-6"
+          !isOnlyMember ? "pb-6 lg:ml-40" : "pb-6"
         } w-full transition-all duration-300`}
       >
-        <div className="px-2 py-4 sm:px-4 sm:py-6 lg:px-6 lg:py-8 max-w-full overflow-x-hidden">
-          <div className="mx-auto w-full max-w-none">
+        <div className="px-2 py-4 sm:px-4 sm:py-6 lg:pl-0 lg:pr-4 lg:py-6 xl:pl-1 xl:pr-6 xl:py-8 max-w-full overflow-x-hidden">
+          <div className="mx-auto w-full max-w-7xl">
             {children || <Outlet />}
           </div>
         </div>

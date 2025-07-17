@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import type { Company } from "../types";
 import { THEME_COLORS } from "../types";
 import { useCustomer } from "../context/CustomerContext";
+import CustomerSelector from "../components/CustomerSelector";
 import "../utils/companyService";
 
 const CustomerMaster: React.FC = () => {
@@ -52,26 +53,6 @@ const CustomerMaster: React.FC = () => {
       }
     }
   }, [selectedCustomerId, customers]);
-
-  // 新規登録ボタンのクリックハンドラ
-  const handleNewCompany = () => {
-    setSelectedCustomerId("");
-    setCompanyData({
-      name: "",
-      nameKana: "",
-      address: "",
-      postalCode: "",
-      industry: "",
-      phoneNumber: "",
-      email: "",
-      contractModel: "",
-      contractDate: "",
-      paymentCycle: "",
-      salesPersonIds: [""],
-    });
-    setError("");
-    setSuccess("");
-  };
 
   const handleCompanyChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -179,67 +160,31 @@ const CustomerMaster: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            基本情報
-          </h1>
-          <p className="mt-2 text-sm text-gray-600">
-            {isMaster
-              ? "登録済みの基本情報を編集できます"
-              : "登録済みの基本情報を表示しています"}
-          </p>
-        </div>
-        {isMaster && (
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                顧客選択:
-              </span>
-              <select
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:max-w-[180px]"
-                style={{ borderColor: THEME_COLORS.border }}
-              >
-                <option value="">選択してください</option>
-                {customers.map((company) => (
-                  <option key={company.id} value={company.id}>
-                    {company.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="button"
-              onClick={handleNewCompany}
-              className="text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 w-full sm:w-auto"
-              style={{ backgroundColor: THEME_COLORS.accent }}
-            >
-              新規登録
-            </button>
-          </div>
-        )}
+    <div className="space-y-6 xl:space-y-8">
+      {/* Header with customer selector */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
+          基本情報登録
+        </h1>
+        <CustomerSelector />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-        {/* 基本情報 */}
+      {/* 基本情報 */}
+      <form onSubmit={handleSubmit} className="space-y-6 xl:space-y-8">
         <div
-          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6 xl:p-8"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
         >
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg sm:text-xl xl:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
             基本情報
           </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
             <div>
               <label
                 htmlFor="name"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                企業名{" "}
+                会社名{" "}
                 <span style={{ color: THEME_COLORS.status.error }}>*</span>
               </label>
               <input
@@ -250,7 +195,7 @@ const CustomerMaster: React.FC = () => {
                 onChange={handleCompanyChange}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 style={{ borderColor: THEME_COLORS.border }}
-                placeholder="株式会社○○"
+                placeholder="株式会社〇〇"
                 required
                 disabled={!isMaster}
               />
@@ -261,7 +206,7 @@ const CustomerMaster: React.FC = () => {
                 htmlFor="nameKana"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                企業名（カタカナ）{" "}
+                会社名（カナ）{" "}
                 <span style={{ color: THEME_COLORS.status.error }}>*</span>
               </label>
               <input
@@ -272,7 +217,7 @@ const CustomerMaster: React.FC = () => {
                 onChange={handleCompanyChange}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 style={{ borderColor: THEME_COLORS.border }}
-                placeholder="カブシキガイシャ○○"
+                placeholder="カブシキガイシャ〇〇"
                 required
                 disabled={!isMaster}
               />
@@ -328,7 +273,7 @@ const CustomerMaster: React.FC = () => {
               />
             </div>
 
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2 xl:col-span-2">
               <label
                 htmlFor="address"
                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -371,7 +316,7 @@ const CustomerMaster: React.FC = () => {
               />
             </div>
 
-            <div>
+            <div className="xl:col-span-2">
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -397,10 +342,12 @@ const CustomerMaster: React.FC = () => {
 
         {/* 契約情報 */}
         <div
-          className="bg-white rounded-lg shadow-sm p-6"
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6 xl:p-8"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
         >
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">契約情報</h2>
+          <h2 className="text-lg sm:text-xl xl:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
+            契約情報
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

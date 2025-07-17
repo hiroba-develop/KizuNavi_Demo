@@ -89,11 +89,11 @@ const Questions: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
             設問項目
           </h1>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mt-3 sm:mt-0">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 xl:space-x-4 mt-3 sm:mt-0">
           <CustomerSelector />
           {/* Annotations Button - Always visible */}
           <button
