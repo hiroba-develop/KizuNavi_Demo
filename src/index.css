@@ -30,11 +30,121 @@ body {
     font-size: 1.25rem !important;
   }
   
+  /* ナビゲーションの調整 */
+  .nav-mobile {
+    width: 100vw;
+    max-width: 320px;
+  }
+  
+  /* ボタンの調整 */
+  .btn-mobile {
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* フォームの調整 */
+  .form-mobile {
+    padding: 1rem;
+  }
+  
+  .form-mobile .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  /* カードの調整 */
+  .card-mobile {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+  
+  /* SVGチャートのレスポンシブ対応 */
+  .chart-svg {
+    max-width: 100%;
+    height: auto;
+  }
+  
   /* テーブルのレスポンシブ対応 */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+  }
+  
   table {
+    width: 100%;
+    min-width: 600px;
+  }
+  
+  /* モバイル用のテーブル調整 */
+  .table-mobile {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+  }
+  
+  .table-mobile thead {
+    display: block;
+  }
+  
+  .table-mobile tbody {
+    display: block;
+  }
+  
+  .table-mobile tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+  }
+  
+  .table-mobile th,
+  .table-mobile td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+}
+
+@media (max-width: 640px) {
+  /* より小さなスクリーン用の調整 */
+  .container-mobile {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  .text-mobile-sm {
+    font-size: 0.75rem;
+  }
+  
+  .spacing-mobile {
+    margin-bottom: 0.5rem;
+  }
+  
+  /* グリッドレイアウトの調整 */
+  .grid-mobile {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 非常に小さなスクリーン用の調整 */
+  h1 {
+    font-size: 1.25rem !important;
+  }
+  
+  h2 {
+    font-size: 1.125rem !important;
+  }
+  
+  .text-xs-mobile {
+    font-size: 0.625rem;
+  }
+  
+  /* パディングの最小化 */
+  .p-minimal {
+    padding: 0.5rem;
   }
 }
 

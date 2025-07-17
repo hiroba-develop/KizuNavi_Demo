@@ -179,10 +179,12 @@ const CustomerMaster: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">基本情報</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            基本情報
+          </h1>
           <p className="mt-2 text-sm text-gray-600">
             {isMaster
               ? "登録済みの基本情報を編集できます"
@@ -190,15 +192,15 @@ const CustomerMaster: React.FC = () => {
           </p>
         </div>
         {isMaster && (
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-700">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
                 顧客選択:
               </span>
               <select
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-[180px]"
+                className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:max-w-[180px]"
                 style={{ borderColor: THEME_COLORS.border }}
               >
                 <option value="">選択してください</option>
@@ -212,7 +214,7 @@ const CustomerMaster: React.FC = () => {
             <button
               type="button"
               onClick={handleNewCompany}
-              className="text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+              className="text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 w-full sm:w-auto"
               style={{ backgroundColor: THEME_COLORS.accent }}
             >
               新規登録
@@ -221,15 +223,17 @@ const CustomerMaster: React.FC = () => {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         {/* 基本情報 */}
         <div
-          className="bg-white rounded-lg shadow-sm p-6"
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
         >
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">基本情報</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
+            基本情報
+          </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label
                 htmlFor="name"

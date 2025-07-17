@@ -273,10 +273,12 @@ const CategoryReport: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header with customer selector */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">カテゴリ別レポート</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          カテゴリ別レポート
+        </h1>
         <CustomerSelector showPeriod={true} />
       </div>
 
@@ -361,7 +363,7 @@ const CategoryReport: React.FC = () => {
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
         <BarChart data={currentData} title="スコア" />
         <RadarChart data={currentData} title="ポジティブ割合" />
       </div>

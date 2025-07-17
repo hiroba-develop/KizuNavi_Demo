@@ -89,14 +89,16 @@ const Questions: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">設問項目</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            設問項目
+          </h1>
         </div>
-        <div className="flex items-center space-x-3 mt-3 sm:mt-0">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mt-3 sm:mt-0">
           <CustomerSelector />
           {/* Annotations Button - Always visible */}
           <button
             onClick={() => setShowAnnotations(!showAnnotations)}
-            className="bg-white text-gray-700 text-sm font-medium py-2 px-4 rounded-lg shadow-lg border transition-colors duration-200 hover:bg-gray-50"
+            className="bg-white text-gray-700 text-sm font-medium py-2 px-4 rounded-lg shadow-lg border transition-colors duration-200 hover:bg-gray-50 w-full sm:w-auto"
             style={{ borderColor: THEME_COLORS.border }}
           >
             注釈 {showAnnotations ? "▼" : "▶"}

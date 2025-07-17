@@ -29,6 +29,19 @@ const Dashboard: React.FC = () => {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  // モバイルデバイスの検出
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -206,21 +219,23 @@ const Dashboard: React.FC = () => {
   };
 
   const BarChart = ({ data, title }: { data: any[]; title: string }) => {
-    const width = 500;
-    const height = 280;
-    const padding = 60;
+    const width = isMobile ? 400 : 500;
+    const height = isMobile ? 240 : 280;
+    const padding = isMobile ? 40 : 60;
     const maxValue = 6;
     const chartHeight = height - 2 * padding;
 
     return (
-      <div className="space-y-6">
-        <h4 className="text-lg font-medium text-gray-700">{title}</h4>
+      <div className="space-y-4 sm:space-y-6">
+        <h4 className="text-base sm:text-lg font-medium text-gray-700">
+          {title}
+        </h4>
         <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-lg min-w-[400px]">
+          <div className="w-full max-w-lg min-w-[320px] sm:min-w-[400px]">
             <svg
               width="100%"
-              height="280"
-              viewBox="0 0 500 280"
+              height={height}
+              viewBox={`0 0 ${width} ${height}`}
               preserveAspectRatio="xMidYMid meet"
               xmlns="http://www.w3.org/2000/svg"
               className="w-full h-auto"
@@ -331,10 +346,10 @@ const Dashboard: React.FC = () => {
   };
 
   const RadarChart = ({ data, title }: { data: any[]; title: string }) => {
-    const size = 360;
+    const size = isMobile ? 280 : 360;
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = 130;
+    const radius = isMobile ? 100 : 130;
     const maxValue = 6;
 
     const angleStep = (2 * Math.PI) / data.length;
@@ -355,14 +370,16 @@ const Dashboard: React.FC = () => {
         .join(" ") + " Z";
 
     return (
-      <div className="space-y-6">
-        <h4 className="text-lg font-medium text-gray-700">{title}</h4>
+      <div className="space-y-4 sm:space-y-6">
+        <h4 className="text-base sm:text-lg font-medium text-gray-700">
+          {title}
+        </h4>
         <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-sm min-w-[320px]">
+          <div className="w-full max-w-sm min-w-[280px] sm:min-w-[320px]">
             <svg
               width="100%"
-              height="360"
-              viewBox="0 0 360 360"
+              height={size}
+              viewBox={`0 0 ${size} ${size}`}
               preserveAspectRatio="xMidYMid meet"
               className="overflow-visible w-full h-auto"
               xmlns="http://www.w3.org/2000/svg"
@@ -434,15 +451,16 @@ const Dashboard: React.FC = () => {
 
               {/* Labels */}
               {points.map((point, index) => {
-                const labelRadius = radius + 45;
+                const labelRadius = radius + (isMobile ? 35 : 45);
                 const angle = index * angleStep - Math.PI / 2;
                 const labelX = centerX + Math.cos(angle) * labelRadius;
                 const labelY = centerY + Math.sin(angle) * labelRadius;
 
                 // Adjust text anchor based on position to prevent overlap
                 let textAnchor = "middle";
-                if (labelX < centerX - 30) textAnchor = "end";
-                else if (labelX > centerX + 30) textAnchor = "start";
+                if (labelX < centerX - (isMobile ? 20 : 30)) textAnchor = "end";
+                else if (labelX > centerX + (isMobile ? 20 : 30))
+                  textAnchor = "start";
 
                 return (
                   <text
@@ -451,12 +469,12 @@ const Dashboard: React.FC = () => {
                     y={labelY}
                     textAnchor={textAnchor}
                     dominantBaseline="middle"
-                    className="text-sm font-medium fill-gray-600"
-                    style={{ fontSize: "11px" }}
+                    className="text-xs sm:text-sm font-medium fill-gray-600"
+                    style={{ fontSize: isMobile ? "9px" : "11px" }}
                   >
                     <tspan>
-                      {point.label.length > 8
-                        ? point.label.substring(0, 7) + "..."
+                      {point.label.length > (isMobile ? 6 : 8)
+                        ? point.label.substring(0, isMobile ? 5 : 7) + "..."
                         : point.label}
                     </tspan>
                   </text>
@@ -470,9 +488,9 @@ const Dashboard: React.FC = () => {
   };
 
   const LineChart = ({ data, title }: { data: any[]; title: string }) => {
-    const width = 500;
-    const height = 320;
-    const padding = 60;
+    const width = isMobile ? 400 : 500;
+    const height = isMobile ? 280 : 320;
+    const padding = isMobile ? 40 : 60;
     const maxValue = 6;
 
     const points = data.map((item, index) => {
@@ -487,14 +505,16 @@ const Dashboard: React.FC = () => {
       .join(" ");
 
     return (
-      <div className="space-y-6">
-        <h4 className="text-lg font-medium text-gray-700">{title}</h4>
+      <div className="space-y-4 sm:space-y-6">
+        <h4 className="text-base sm:text-lg font-medium text-gray-700">
+          {title}
+        </h4>
         <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-lg min-w-[400px]">
+          <div className="w-full max-w-lg min-w-[320px] sm:min-w-[400px]">
             <svg
               width="100%"
-              height="320"
-              viewBox="0 0 500 320"
+              height={height}
+              viewBox={`0 0 ${width} ${height}`}
               preserveAspectRatio="xMidYMid meet"
               xmlns="http://www.w3.org/2000/svg"
               className="w-full h-auto"
@@ -634,73 +654,75 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header with customer selector */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">ダッシュボード</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          ダッシュボード
+        </h1>
         <CustomerSelector showPeriod={true} />
       </div>
 
       {/* Top Row: Metrics and Circular Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Left: Main Metrics and Kizuna Score */}
         <div
-          className="bg-white rounded-lg shadow-sm p-6"
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
         >
-          <div className="grid grid-cols-2 gap-4 h-full">
-            <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 h-full">
+            <div className="space-y-3 sm:space-y-4">
               <div className="text-center">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
                   キズナ度
                 </h3>
                 <div
-                  className="text-3xl font-bold"
+                  className="text-2xl sm:text-3xl font-bold"
                   style={{ color: THEME_COLORS.accent }}
                 >
                   {metrics.kizunaScore}
-                  <span className="text-lg text-gray-400">/6</span>
+                  <span className="text-sm sm:text-lg text-gray-400">/6</span>
                 </div>
               </div>
 
               <div className="text-center">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
                   エンゲージメント
                 </h3>
                 <div
-                  className="text-3xl font-bold"
+                  className="text-2xl sm:text-3xl font-bold"
                   style={{ color: THEME_COLORS.main }}
                 >
                   {metrics.engagementScore}
-                  <span className="text-lg text-gray-400">/6</span>
+                  <span className="text-sm sm:text-lg text-gray-400">/6</span>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="text-center">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
                   従業員満足度
                 </h3>
                 <div
-                  className="text-3xl font-bold"
+                  className="text-2xl sm:text-3xl font-bold"
                   style={{ color: THEME_COLORS.status.success }}
                 >
                   {metrics.satisfactionScore}
-                  <span className="text-lg text-gray-400">/6</span>
+                  <span className="text-sm sm:text-lg text-gray-400">/6</span>
                 </div>
               </div>
 
               <div className="text-center">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
                   人的資本スコア
                 </h3>
                 <div
-                  className="text-3xl font-bold"
+                  className="text-2xl sm:text-3xl font-bold"
                   style={{ color: THEME_COLORS.status.warning }}
                 >
                   {metrics.humanCapitalScore}
-                  <span className="text-lg text-gray-400">/6</span>
+                  <span className="text-sm sm:text-lg text-gray-400">/6</span>
                 </div>
               </div>
             </div>
@@ -709,34 +731,37 @@ const Dashboard: React.FC = () => {
 
         {/* Right: Circular Charts */}
         <div
-          className="bg-white rounded-lg shadow-sm p-6"
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
         >
-          <div className="grid grid-cols-2 gap-6 h-full">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 h-full">
             <div className="flex flex-col items-center justify-center">
-              <h3 className="text-base font-medium text-gray-900 mb-4">
+              <h3 className="text-sm sm:text-base font-medium text-gray-900 mb-2 sm:mb-4 text-center">
                 実施率
               </h3>
               <CircularProgress
                 percentage={metrics.implementationRate}
-                size={140}
+                size={isMobile ? 100 : 140}
               />
             </div>
             <div className="flex flex-col items-center justify-center">
-              <h3 className="text-base font-medium text-gray-900 mb-4">
+              <h3 className="text-sm sm:text-base font-medium text-gray-900 mb-2 sm:mb-4 text-center">
                 ポジティブ割合
               </h3>
-              <CircularProgress percentage={metrics.positiveRate} size={140} />
+              <CircularProgress
+                percentage={metrics.positiveRate}
+                size={isMobile ? 100 : 140}
+              />
             </div>
           </div>
         </div>
       </div>
 
       {/* Second Row: Department and Generation Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Department Bar Chart */}
         <div
-          className="bg-white rounded-lg shadow-sm p-6"
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
         >
           <BarChart data={chartData.departmentKizuna} title="部門別キズナ度" />
@@ -744,7 +769,7 @@ const Dashboard: React.FC = () => {
 
         {/* Generation Line Chart */}
         <div
-          className="bg-white rounded-lg shadow-sm p-6"
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
         >
           <LineChart data={chartData.generationKizuna} title="世代別キズナ度" />
@@ -752,10 +777,10 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Third Row: Category and Tenure Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Category Radar Chart */}
         <div
-          className="bg-white rounded-lg shadow-sm p-6"
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
         >
           <RadarChart
@@ -766,7 +791,7 @@ const Dashboard: React.FC = () => {
 
         {/* Tenure Line Chart */}
         <div
-          className="bg-white rounded-lg shadow-sm p-6"
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
           style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
         >
           <LineChart data={chartData.tenureKizuna} title="勤続年数別キズナ度" />

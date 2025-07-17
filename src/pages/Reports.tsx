@@ -93,13 +93,15 @@ const Reports: React.FC = () => {
     trend?: string;
   }) => (
     <div
-      className="bg-white rounded-lg shadow-sm border p-6"
+      className="bg-white rounded-lg shadow-sm border p-4 sm:p-6"
       style={{ borderColor: THEME_COLORS.border }}
     >
-      <h3 className="text-sm font-medium text-gray-600 mb-2">{title}</h3>
+      <h3 className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">
+        {title}
+      </h3>
       <div className="flex items-baseline">
         <span
-          className="text-3xl font-bold"
+          className="text-2xl sm:text-3xl font-bold"
           style={{ color: THEME_COLORS.accent }}
         >
           {value}
@@ -240,21 +242,21 @@ const Reports: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             分析レポート
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             従業員エンゲージメント調査の詳細な分析結果を表示します
           </p>
         </div>
 
         {/* Filters and Controls */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-          <div className="flex flex-wrap items-center gap-4">
+        <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 調査期間
@@ -324,7 +326,7 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Summary Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <MetricCard
             title="Kizuna スコア"
             value={mockData.summaryMetrics.kizunaScore.toFixed(1)}
@@ -348,7 +350,7 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
           <DepartmentTable />
           <CategoryAnalysis />
         </div>

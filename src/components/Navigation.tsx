@@ -297,13 +297,13 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
 
       {/* Navigation sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen pt-16 pb-6 transition-transform duration-300 bg-white border-r border-gray-200 w-64 lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 h-screen pt-16 pb-6 transition-transform duration-300 bg-white border-r border-gray-200 w-72 sm:w-64 lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } shadow-lg`}
+        } shadow-lg lg:shadow-none`}
         style={{ borderColor: THEME_COLORS.border }}
       >
         <div className="h-full px-3 py-4 overflow-y-auto">
-          <ul className="space-y-2">
+          <ul className="space-y-1 sm:space-y-2">
             {visibleItems.map((item) => {
               const isActive = isActiveItem(item);
               return (
@@ -312,16 +312,24 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
                     <div className="w-full">
                       <button
                         onClick={() => toggleExpanded(item.name)}
-                        className={`flex items-center w-full p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 group ${
+                        className={`flex items-center w-full p-2 sm:p-3 text-sm sm:text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 group transition-colors duration-200 ${
                           isActive ? item.bgColor : ""
                         }`}
+                        aria-expanded={isExpanded(item.name)}
+                        aria-label={`${item.name}メニューを${
+                          isExpanded(item.name) ? "閉じる" : "開く"
+                        }`}
                       >
-                        <span className={`mr-3 ${isActive ? item.color : ""}`}>
+                        <span
+                          className={`mr-2 sm:mr-3 ${
+                            isActive ? item.color : ""
+                          }`}
+                        >
                           {getIcon(item.icon, isActive)}
                         </span>
                         <span className="flex-1 text-left">{item.name}</span>
                         <svg
-                          className={`w-5 h-5 transform transition-transform ${
+                          className={`w-4 h-4 sm:w-5 sm:h-5 transform transition-transform duration-200 ${
                             isExpanded(item.name) ? "rotate-180" : "rotate-0"
                           }`}
                           fill="none"
@@ -337,15 +345,15 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
                         </svg>
                       </button>
                       {isExpanded(item.name) && (
-                        <ul className="ml-6 mt-2 space-y-2 w-full">
+                        <ul className="ml-4 sm:ml-6 mt-1 sm:mt-2 space-y-1 sm:space-y-2 w-full">
                           {item.subItems.map((subItem) => (
                             <li key={subItem.name} className="w-full">
                               <NavLink
                                 to={subItem.href}
                                 onClick={onClose}
                                 className={({ isActive }) =>
-                                  `flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 w-full ${
-                                    isActive ? "bg-gray-100" : ""
+                                  `flex items-center p-2 text-sm sm:text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 w-full transition-colors duration-200 ${
+                                    isActive ? "bg-gray-100 text-gray-900" : ""
                                   }`
                                 }
                               >
@@ -361,12 +369,14 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
                       to={item.href}
                       onClick={onClose}
                       className={({ isActive }) =>
-                        `flex items-center p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 w-full ${
+                        `flex items-center p-2 sm:p-3 text-sm sm:text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 w-full transition-colors duration-200 ${
                           isActive ? item.bgColor : ""
                         }`
                       }
                     >
-                      <span className={`mr-3 ${isActive ? item.color : ""}`}>
+                      <span
+                        className={`mr-2 sm:mr-3 ${isActive ? item.color : ""}`}
+                      >
                         {getIcon(item.icon, isActive)}
                       </span>
                       <span>{item.name}</span>
