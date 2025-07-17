@@ -29,7 +29,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { login, user } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleInputChange = (
@@ -66,15 +66,11 @@ const Login: React.FC = () => {
       } else {
         // ログイン成功後、少し遅延してからリダイレクト
         setTimeout(() => {
-          // ログイン後のユーザー情報が確実に利用可能になるまで少し待機
-          const userRole = user?.role || "member";
-          const idType = user?.idType || "employee";
-
           // マスター権限と人事ID、または従業員IDもダッシュボード画面へ遷移
           navigate("/dashboard");
         }, 300); // 300ミリ秒の遅延を追加
       }
-    } catch (err) {
+    } catch {
       setError("ログインに失敗しました。入力内容を確認してください。");
     } finally {
       setIsLoading(false);
@@ -93,7 +89,7 @@ const Login: React.FC = () => {
         // すべてのユーザータイプをダッシュボードに遷移
         navigate("/dashboard");
       }, 300); // 300ミリ秒の遅延を追加
-    } catch (err) {
+    } catch {
       setError("プロフィール情報の保存に失敗しました。");
     } finally {
       setIsLoading(false);

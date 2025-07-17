@@ -2,14 +2,12 @@ import React, { useState } from "react";
 import { THEME_COLORS } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useQuestions } from "../context/QuestionsContext";
-import { useCustomer } from "../context/CustomerContext";
 import CustomerSelector from "../components/CustomerSelector";
 
 const Questions: React.FC = () => {
   const { user } = useAuth();
   const { questions, updateQuestionNote } = useQuestions();
   const isMaster = user?.role === "master";
-  const [selectedCustomerId, setSelectedCustomerId] = useState("3");
 
   const QUESTIONS_PER_PAGE = 10;
   const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);

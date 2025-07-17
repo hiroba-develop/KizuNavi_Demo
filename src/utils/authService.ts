@@ -37,8 +37,8 @@ export class AuthService {
   static async logout(): Promise<void> {
     try {
       await apiClient.post('/auth/logout');
-    } catch (error) {
-      console.warn('Logout API call failed:', error);
+    } catch {
+      console.warn('Logout API call failed');
     } finally {
       // Clear local storage and token regardless of API call result
       apiClient.removeToken();
@@ -51,7 +51,7 @@ export class AuthService {
     try {
       const response = await apiClient.get<TokenValidationResponse>('/auth/validate');
       return response.data;
-    } catch (error) {
+    } catch {
       return { valid: false };
     }
   }

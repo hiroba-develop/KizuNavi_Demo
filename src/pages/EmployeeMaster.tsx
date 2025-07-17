@@ -64,18 +64,6 @@ const mockEmployees = [
   },
 ];
 
-const mockCustomers = [
-  { customer_id: "C001", customer_name: "株式会社A" },
-  { customer_id: "C002", customer_name: "株式会社B" },
-  { customer_id: "C003", customer_name: "株式会社C" },
-];
-
-const mockUser = {
-  id: "U001",
-  employeeId: "E001",
-  role: 2, // HR user
-};
-
 const THEME_COLORS = {
   border: "#e5e7eb",
 };
@@ -103,7 +91,6 @@ interface Employee {
 const EmployeeMaster = () => {
   const { user } = useAuth(); // AuthContextからユーザー情報を取得
   const { selectedCustomerId } = useCustomer();
-  const [customerList] = useState(mockCustomers);
   const [employees, setEmployees] = useState(mockEmployees);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -153,10 +140,9 @@ const EmployeeMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [userRole, setUserRole] = useState(2); // 2: HR user, 3: Sales user
+  const userRole = 2; // 2: HR user, 3: Sales user
 
   // ユーザーロールの判定
-  const isSalesUser = () => userRole === 3;
   const isHRUser = () => userRole === 2;
   const isMasterUser = () => user?.role === "master"; // マスター権限かどうかを判定
 
@@ -251,7 +237,7 @@ const EmployeeMaster = () => {
         setEmployees((prev) => prev.filter((emp) => emp.employee_id !== id));
         setSuccess("従業員が削除されました。");
         setTimeout(() => setSuccess(""), 3000);
-      } catch (err: unknown) {
+      } catch {
         setError("従業員の削除に失敗しました");
       } finally {
         setIsLoading(false);

@@ -155,7 +155,7 @@ export class SurveyService {
       }
       
       return null;
-    } catch (error) {
+    } catch {
       // If response doesn't exist, return null instead of throwing
       return null;
     }

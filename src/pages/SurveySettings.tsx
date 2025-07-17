@@ -80,7 +80,7 @@ const SurveySettings: React.FC = () => {
       console.log("Survey draft saved:", savedSurvey);
       setSurveyData(savedSurvey);
       setSuccess("下書きが保存されました。");
-    } catch (err) {
+    } catch {
       setError("保存に失敗しました。");
     } finally {
       setIsLoading(false);
@@ -112,7 +112,7 @@ const SurveySettings: React.FC = () => {
       console.log("Survey published:", publishedSurvey);
       setSurveyData(publishedSurvey);
       setSuccess("サーベイが公開され、従業員にメールが送信されました。");
-    } catch (err) {
+    } catch {
       setError("公開に失敗しました。");
     } finally {
       setIsLoading(false);

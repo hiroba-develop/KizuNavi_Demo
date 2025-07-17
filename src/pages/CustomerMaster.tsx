@@ -3,9 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import type { Company } from "../types";
 import { THEME_COLORS } from "../types";
 import { useCustomer } from "../context/CustomerContext";
-import CompanyService, {
-  type CompanyRegistrationData,
-} from "../utils/companyService";
+import "../utils/companyService";
 
 const CustomerMaster: React.FC = () => {
   const { user } = useAuth();
@@ -145,7 +143,7 @@ const CustomerMaster: React.FC = () => {
         setSelectedCustomerId(newCompany.id);
       } else {
         // 既存の会社情報を更新（デモ用）
-        const updatedCompanies = customers.map((company) => {
+        customers.map((company) => {
           if (company.id === selectedCustomerId) {
             return {
               ...company,
