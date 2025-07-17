@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useCustomer } from "../context/CustomerContext";
 import { useAuth } from "../context/AuthContext";
 import CustomerSelector from "../components/CustomerSelector";
