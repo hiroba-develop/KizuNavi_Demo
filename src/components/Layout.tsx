@@ -75,14 +75,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // アクセス制限表示の設定
   const showAccessRestriction =
     (isEmployee && location.pathname !== "/survey") ||
-    (user?.idType === "hr" && location.pathname === "/customers");
+    (user?.idType === "hr" &&
+      user?.role !== "master" &&
+      location.pathname === "/customers");
 
   // アクセス制限メッセージの設定
   const getAccessRestrictionMessage = () => {
     if (isEmployee) {
       return "メンバー権限ではアンケート回答のみ利用可能です。";
     }
-    if (user?.idType === "hr" && location.pathname === "/customers") {
+    if (
+      user?.idType === "hr" &&
+      user?.role !== "master" &&
+      location.pathname === "/customers"
+    ) {
       return "人事IDでは基本情報登録画面にアクセスできません。";
     }
     return "この画面を表示する権限がありません。";
@@ -113,9 +119,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Main Content */}
-      <main className={`pt-16 ${!isOnlyMember ? "pb-6 lg:ml-64" : "pb-6"}`}>
+      <main
+        className={`pt-16 ${!isOnlyMember ? "pb-6 lg:ml-64" : "pb-6"} w-full`}
+      >
         <div className="p-2 sm:p-4 lg:p-6">
-          <div className="mx-auto">{children || <Outlet />}</div>
+          <div className="mx-auto w-full">{children || <Outlet />}</div>
         </div>
       </main>
 

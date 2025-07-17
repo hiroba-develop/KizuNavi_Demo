@@ -42,7 +42,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
           <select
             value={selectedCustomerId}
             onChange={handleCustomerChange}
-            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-[180px]"
             style={{ borderColor: THEME_COLORS.border }}
           >
             {customers.map((customer) => (
@@ -67,7 +67,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
           <select
             value={selectedPeriod}
             onChange={handlePeriodChange}
-            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-[180px]"
             style={{ borderColor: THEME_COLORS.border }}
           >
             {periods.map((period) => (

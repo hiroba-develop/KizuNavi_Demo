@@ -291,6 +291,7 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
 
@@ -298,7 +299,7 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       <aside
         className={`fixed top-0 left-0 z-40 h-screen pt-16 pb-6 transition-transform duration-300 bg-white border-r border-gray-200 w-64 lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } shadow-lg`}
         style={{ borderColor: THEME_COLORS.border }}
       >
         <div className="h-full px-3 py-4 overflow-y-auto">

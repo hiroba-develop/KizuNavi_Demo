@@ -26,7 +26,7 @@ function App() {
     <AuthProvider>
       <QuestionsProvider>
         <CustomerProvider>
-          <Router>
+          <Router basename="/">
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route

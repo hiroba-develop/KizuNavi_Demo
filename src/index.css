@@ -16,6 +16,26 @@ body {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+  
+  /* モバイルデバイス用の追加スタイル */
+  body {
+    font-size: 14px;
+  }
+  
+  h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  /* テーブルのレスポンシブ対応 */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
 }
 
 /* Custom component styles */

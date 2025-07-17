@@ -1,14 +1,13 @@
 #root {
-  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
 /* レスポンシブ対応のためのスタイル */
 @media (max-width: 768px) {
   #root {
-    padding: 1rem;
+    padding: 0;
   }
 }
 

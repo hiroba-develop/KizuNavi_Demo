@@ -315,7 +315,7 @@ const SummaryReport: React.FC = () => {
       <div className="p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
-            指標別データ
+            指標別データ一覧
           </h2>
           <div className="text-sm text-gray-600">
             実施日:{" "}
@@ -397,15 +397,22 @@ const SummaryReport: React.FC = () => {
         <CustomerSelector showPeriod={true} />
       </div>
 
-      {/* Main content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Data Table */}
-        <DataTable data={metricsData} />
-
-        {/* Charts Grid */}
-        <BarChart data={metricsData} title="スコア" />
-        <RadarChart data={metricsData} title="ポジティブ割合" />
+      {/* 指標別データ */}
+      <div
+        className="bg-white rounded-lg shadow-sm border p-6"
+        style={{ borderColor: THEME_COLORS.border }}
+      >
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          指標別データ
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <BarChart data={metricsData} title="スコア" />
+          <RadarChart data={metricsData} title="ポジティブ割合" />
+        </div>
       </div>
+
+      {/* Data Table */}
+      <DataTable data={metricsData} />
     </div>
   );
 };
