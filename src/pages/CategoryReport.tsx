@@ -4,10 +4,10 @@ import { useCustomer } from "../context/CustomerContext";
 import CustomerSelector from "../components/CustomerSelector";
 
 const CategoryReport: React.FC = () => {
-  const { selectedPeriod } = useCustomer();
+  const { selectedPeriod, selectedCustomerId } = useCustomer();
 
-  // Mock data for 8 categories
-  const currentData = [
+  // ベースデータ（顧客・期間によって調整される）
+  const baseData = [
     { name: "経営幹部への信頼", score: 4.8, positiveRate: 74.2 },
     { name: "企業風土", score: 4.2, positiveRate: 68.5 },
     { name: "人間関係", score: 5.1, positiveRate: 82.3 },
@@ -17,6 +17,31 @@ const CategoryReport: React.FC = () => {
     { name: "ワークライフバランス", score: 4.9, positiveRate: 78.6 },
     { name: "改革の息吹", score: 4.3, positiveRate: 66.9 },
   ];
+
+  // 顧客IDと期間に基づいて数値を調整
+  const customerMultiplier =
+    selectedCustomerId === "1" ? 0.9 : selectedCustomerId === "2" ? 1.1 : 1.0;
+  const periodMultiplier =
+    selectedPeriod === "2024-04-01"
+      ? 1.0
+      : selectedPeriod === "2024-03-01"
+      ? 0.95
+      : selectedPeriod === "2024-02-01"
+      ? 0.9
+      : selectedPeriod === "2024-01-01"
+      ? 0.85
+      : 0.8; // 2023-10-01
+
+  // 動的にデータを生成
+  const currentData = baseData.map((item) => ({
+    ...item,
+    score:
+      Math.round(item.score * customerMultiplier * periodMultiplier * 10) / 10,
+    positiveRate:
+      Math.round(
+        item.positiveRate * customerMultiplier * periodMultiplier * 10
+      ) / 10,
+  }));
 
   const BarChart = ({
     data,

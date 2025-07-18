@@ -4,54 +4,104 @@ import { useCustomer } from "../context/CustomerContext";
 import CustomerSelector from "../components/CustomerSelector";
 
 const SummaryReport: React.FC = () => {
-  const { selectedPeriod } = useCustomer();
+  const { selectedPeriod, selectedCustomerId } = useCustomer();
 
-  // Mock data for summary report
-  const summaryData = {
-    "2024-04-01": {
-      kizunaScore: { score: 5.1, positiveRate: 74.2 },
-      engagementScore: { score: 4.3, positiveRate: 68.5 },
-      satisfactionScore: { score: 5.5, positiveRate: 81.3 },
-      humanCapitalScore: { score: 4.8, positiveRate: 72.9 },
-    },
-    "2024-03-01": {
-      kizunaScore: { score: 4.9, positiveRate: 71.8 },
-      engagementScore: { score: 4.2, positiveRate: 66.2 },
-      satisfactionScore: { score: 5.1, positiveRate: 78.5 },
-      humanCapitalScore: { score: 4.6, positiveRate: 70.1 },
-    },
-    "2024-02-01": {
-      kizunaScore: { score: 4.8, positiveRate: 69.3 },
-      engagementScore: { score: 4.0, positiveRate: 64.7 },
-      satisfactionScore: { score: 4.9, positiveRate: 75.2 },
-      humanCapitalScore: { score: 4.4, positiveRate: 67.8 },
-    },
-    "2024-01-01": {
-      kizunaScore: { score: 4.7, positiveRate: 68.1 },
-      engagementScore: { score: 3.9, positiveRate: 63.4 },
-      satisfactionScore: { score: 4.8, positiveRate: 73.8 },
-      humanCapitalScore: { score: 4.3, positiveRate: 66.5 },
-    },
-    "2023-10-01": {
-      kizunaScore: { score: 4.6, positiveRate: 67.2 },
-      engagementScore: { score: 3.8, positiveRate: 62.1 },
-      satisfactionScore: { score: 4.7, positiveRate: 72.6 },
-      humanCapitalScore: { score: 4.2, positiveRate: 65.3 },
-    },
+  // ベースデータ（顧客・期間によって調整される）
+  const baseData = {
+    kizunaScore: { score: 5.1, positiveRate: 74.2 },
+    engagementScore: { score: 4.3, positiveRate: 68.5 },
+    satisfactionScore: { score: 5.5, positiveRate: 81.3 },
+    humanCapitalScore: { score: 4.8, positiveRate: 72.9 },
   };
 
-  // フォールバックデータを定義
-  const fallbackData = {
-    kizunaScore: { score: 5.0, positiveRate: 70.0 },
-    engagementScore: { score: 4.0, positiveRate: 65.0 },
-    satisfactionScore: { score: 5.0, positiveRate: 75.0 },
-    humanCapitalScore: { score: 4.5, positiveRate: 70.0 },
+  // 顧客IDと期間に基づいて数値を調整
+  const getMultipliers = () => {
+    const customerMultiplier =
+      selectedCustomerId === "1" ? 0.9 : selectedCustomerId === "2" ? 1.1 : 1.0;
+    const periodMultiplier =
+      selectedPeriod === "2024-04-01"
+        ? 1.0
+        : selectedPeriod === "2024-03-01"
+        ? 0.95
+        : selectedPeriod === "2024-02-01"
+        ? 0.9
+        : selectedPeriod === "2024-01-01"
+        ? 0.85
+        : 0.8; // 2023-10-01
+
+    return { customerMultiplier, periodMultiplier };
   };
 
-  // 安全にデータを取得する関数
+  // 動的にデータを生成
   const getCurrentData = () => {
-    const data = summaryData[selectedPeriod as keyof typeof summaryData];
-    return data || fallbackData;
+    const { customerMultiplier, periodMultiplier } = getMultipliers();
+
+    return {
+      kizunaScore: {
+        score:
+          Math.round(
+            baseData.kizunaScore.score *
+              customerMultiplier *
+              periodMultiplier *
+              10
+          ) / 10,
+        positiveRate:
+          Math.round(
+            baseData.kizunaScore.positiveRate *
+              customerMultiplier *
+              periodMultiplier *
+              10
+          ) / 10,
+      },
+      engagementScore: {
+        score:
+          Math.round(
+            baseData.engagementScore.score *
+              customerMultiplier *
+              periodMultiplier *
+              10
+          ) / 10,
+        positiveRate:
+          Math.round(
+            baseData.engagementScore.positiveRate *
+              customerMultiplier *
+              periodMultiplier *
+              10
+          ) / 10,
+      },
+      satisfactionScore: {
+        score:
+          Math.round(
+            baseData.satisfactionScore.score *
+              customerMultiplier *
+              periodMultiplier *
+              10
+          ) / 10,
+        positiveRate:
+          Math.round(
+            baseData.satisfactionScore.positiveRate *
+              customerMultiplier *
+              periodMultiplier *
+              10
+          ) / 10,
+      },
+      humanCapitalScore: {
+        score:
+          Math.round(
+            baseData.humanCapitalScore.score *
+              customerMultiplier *
+              periodMultiplier *
+              10
+          ) / 10,
+        positiveRate:
+          Math.round(
+            baseData.humanCapitalScore.positiveRate *
+              customerMultiplier *
+              periodMultiplier *
+              10
+          ) / 10,
+      },
+    };
   };
 
   const currentData = getCurrentData();

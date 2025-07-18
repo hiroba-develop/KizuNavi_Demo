@@ -42,12 +42,12 @@ const getPermissionsByRole = (role: User["role"]): UserPermissions => {
         canAnswerSurvey: true,
       };
     case "admin":
-      // Admin: All except customer management (HR staff)
+      // Admin: All except customer basic info management (HR staff)
       return {
         canViewDashboard: true,
         canManageQuestions: true,
         canViewReports: true,
-        canManageCustomers: false,
+        canManageCustomers: true, // 従業員情報にアクセスするためtrueに変更
         canAnswerSurvey: true,
       };
     case "member":

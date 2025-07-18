@@ -6,6 +6,34 @@ import { useCustomer } from "../context/CustomerContext";
 import CustomerSelector from "../components/CustomerSelector";
 import "../utils/companyService";
 
+// LocalStorageのキー
+const COMPANIES_STORAGE_KEY = "kizu_navi_companies_data";
+
+// LocalStorageから会社データを読み込む関数
+const loadCompaniesFromStorage = (): { [key: string]: Partial<Company> } => {
+  try {
+    const stored = localStorage.getItem(COMPANIES_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    console.error("Failed to load companies from localStorage:", error);
+    return {};
+  }
+};
+
+// LocalStorageに会社データを保存する関数
+const saveCompaniesToStorage = (companiesData: {
+  [key: string]: Partial<Company>;
+}) => {
+  try {
+    localStorage.setItem(COMPANIES_STORAGE_KEY, JSON.stringify(companiesData));
+  } catch (error) {
+    console.error("Failed to save companies to localStorage:", error);
+  }
+};
+
+// 永続化された会社データの管理
+let persistentCompaniesData = loadCompaniesFromStorage();
+
 const CustomerMaster: React.FC = () => {
   const { user } = useAuth();
   const isMaster = user?.role === "master";
@@ -32,24 +60,36 @@ const CustomerMaster: React.FC = () => {
   // 選択された顧客IDに基づいて会社データを更新
   useEffect(() => {
     if (selectedCustomerId) {
-      const selectedCompany = customers.find(
-        (company) => company.id === selectedCustomerId
-      );
-      if (selectedCompany) {
-        // ここではダミーデータを作成していますが、実際にはAPIから取得した詳細データを使用します
-        setCompanyData({
-          name: selectedCompany.name,
-          nameKana: "", // APIから取得する
-          address: "", // APIから取得する
-          postalCode: "", // APIから取得する
-          industry: "", // APIから取得する
-          phoneNumber: "", // APIから取得する
-          email: "", // APIから取得する
-          contractModel: "", // APIから取得する
-          contractDate: "", // APIから取得する
-          paymentCycle: "", // APIから取得する
-          salesPersonIds: [""], // APIから取得する
-        });
+      // 永続化されたデータを最初に確認
+      const persistentData = persistentCompaniesData[selectedCustomerId];
+
+      if (persistentData) {
+        // 永続化されたデータがある場合はそれを使用
+        setCompanyData(persistentData);
+      } else {
+        // 永続化されたデータがない場合は顧客名のみ設定
+        const selectedCompany = customers.find(
+          (company) => company.id === selectedCustomerId
+        );
+        if (selectedCompany) {
+          const defaultData = {
+            name: selectedCompany.name,
+            nameKana: "",
+            address: "",
+            postalCode: "",
+            industry: "",
+            phoneNumber: "",
+            email: "",
+            contractModel: "",
+            contractDate: "",
+            paymentCycle: "",
+            salesPersonIds: [""],
+          };
+          setCompanyData(defaultData);
+          // デフォルトデータも永続化
+          persistentCompaniesData[selectedCustomerId] = defaultData;
+          saveCompaniesToStorage(persistentCompaniesData);
+        }
       }
     }
   }, [selectedCustomerId, customers]);
@@ -58,10 +98,18 @@ const CustomerMaster: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setCompanyData((prev) => ({
-      ...prev,
+    const updatedData = {
+      ...companyData,
       [name]: value,
-    }));
+    };
+
+    setCompanyData(updatedData);
+
+    // 選択された顧客のデータをLocalStorageに保存
+    if (selectedCustomerId) {
+      persistentCompaniesData[selectedCustomerId] = updatedData;
+      saveCompaniesToStorage(persistentCompaniesData);
+    }
   };
 
   // TODO: Implement add sales person functionality
@@ -148,6 +196,12 @@ const CustomerMaster: React.FC = () => {
 
       // 成功メッセージを表示（APIは呼び出さない）
       setSuccess("企業情報が正常に登録されました。");
+
+      // 永続化データも更新
+      if (selectedCustomerId) {
+        persistentCompaniesData[selectedCustomerId] = companyData;
+        saveCompaniesToStorage(persistentCompaniesData);
+      }
     } catch (err) {
       setError(
         err instanceof Error

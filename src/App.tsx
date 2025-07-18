@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { QuestionsProvider } from "./context/QuestionsContext";
-import { CustomerProvider } from "./context/CustomerContext";
+import { CustomerProvider, useCustomer } from "./context/CustomerContext";
 import Layout from "./components/Layout";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Login from "./pages/Login";
@@ -22,12 +22,24 @@ import EmployeeMaster from "./pages/EmployeeMaster";
 import PasswordResetConfirm from "./pages/PasswordResetConfirm";
 import "./App.css";
 
+// QuestionsProviderWrapperコンポーネントを作成してselectedCustomerIdを渡す
+const QuestionsProviderWrapper: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { selectedCustomerId } = useCustomer();
+  return (
+    <QuestionsProvider selectedCustomerId={selectedCustomerId}>
+      {children}
+    </QuestionsProvider>
+  );
+};
+
 function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <QuestionsProvider>
-          <CustomerProvider>
+        <CustomerProvider>
+          <QuestionsProviderWrapper>
             <Router basename="/">
               <Routes>
                 <Route path="/login" element={<Login />} />
@@ -49,8 +61,8 @@ function App() {
                 </Route>
               </Routes>
             </Router>
-          </CustomerProvider>
-        </QuestionsProvider>
+          </QuestionsProviderWrapper>
+        </CustomerProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

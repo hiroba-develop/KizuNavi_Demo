@@ -108,13 +108,14 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
     // パーミッションチェック
     const hasRequiredPermission = hasPermission(item.permission);
 
-    // 回答画面は人事IDと従業員IDの両方がアクセス可能
+    // 回答画面は人事IDと従業員IDの両方がアクセス可能だが、マスタ権限は除外
     if (item.href === "/survey") {
       const canAccess =
         hasRequiredPermission &&
-        (user?.idType === "hr" || user?.idType === "employee");
+        (user?.idType === "hr" || user?.idType === "employee") &&
+        user?.role !== "master"; // マスタ権限は回答画面にアクセス不可
       console.log(
-        `Navigation - Survey item: hasPermission=${hasRequiredPermission}, idType=${user?.idType}, canAccess=${canAccess}`
+        `Navigation - Survey item: hasPermission=${hasRequiredPermission}, idType=${user?.idType}, role=${user?.role}, canAccess=${canAccess}`
       );
       return canAccess;
     }
@@ -140,7 +141,14 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       user?.role !== "master" &&
       item.name === "顧客情報"
     ) {
-      return false;
+      // 顧客情報メニューから基本情報登録を除外したサブアイテムのみ表示
+      const filteredItem = {
+        ...item,
+        subItems: item.subItems?.filter(
+          (subItem) => subItem.name !== "基本情報登録"
+        ),
+      };
+      return filteredItem.subItems && filteredItem.subItems.length > 0;
     }
 
     return hasRequiredPermission && hasRequiredIDType;
@@ -307,7 +315,7 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       {/* Overlay for mobile navigation */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 xl:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -315,9 +323,9 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
 
       {/* Navigation sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen pt-16 pb-6 transition-transform duration-300 bg-white border-r border-gray-200 w-64 lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 h-screen pt-16 pb-6 transition-transform duration-300 bg-white border-r border-gray-200 w-64 xl:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } shadow-lg lg:shadow-none`}
+        } shadow-lg xl:shadow-none`}
         style={{ borderColor: THEME_COLORS.border }}
       >
         <div className="h-full px-3 py-4 overflow-y-auto">
@@ -364,7 +372,14 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
                       </button>
                       {isExpanded(item.name) && (
                         <ul className="ml-4 sm:ml-6 mt-1 sm:mt-2 space-y-1 sm:space-y-2 w-full">
-                          {item.subItems.map((subItem) => (
+                          {(user?.idType === "hr" &&
+                          user?.role !== "master" &&
+                          item.name === "顧客情報"
+                            ? item.subItems?.filter(
+                                (subItem) => subItem.name !== "基本情報登録"
+                              )
+                            : item.subItems
+                          )?.map((subItem) => (
                             <li key={subItem.name} className="w-full">
                               <NavLink
                                 to={subItem.href}

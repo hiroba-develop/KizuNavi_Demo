@@ -1,10 +1,15 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { Question } from "../types";
 
 interface QuestionsContextType {
   questions: Question[];
-  updateQuestionNote: (questionId: string, note: string) => void;
+  updateQuestionNote: (
+    questionId: string,
+    note: string,
+    customerId: string
+  ) => void;
+  getQuestionsForCustomer: (customerId: string) => Question[];
 }
 
 const QuestionsContext = createContext<QuestionsContextType | undefined>(
@@ -21,18 +26,91 @@ export const useQuestions = () => {
 
 interface QuestionsProviderProps {
   children: ReactNode;
+  selectedCustomerId: string;
 }
+
+// LocalStorageのキー
+const STORAGE_KEY = "kizu_navi_customer_annotations";
+
+// LocalStorageから注釈データを読み込む関数
+const loadAnnotationsFromStorage = (): {
+  [customerId: string]: { [questionId: string]: string };
+} => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    console.error("Failed to load annotations from localStorage:", error);
+    return {};
+  }
+};
+
+// LocalStorageに注釈データを保存する関数
+const saveAnnotationsToStorage = (annotations: {
+  [customerId: string]: { [questionId: string]: string };
+}) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(annotations));
+  } catch (error) {
+    console.error("Failed to save annotations to localStorage:", error);
+  }
+};
 
 export const QuestionsProvider: React.FC<QuestionsProviderProps> = ({
   children,
+  selectedCustomerId,
 }) => {
-  const [questions, setQuestions] = useState<Question[]>([
+  // 初期データ（デフォルト注釈）
+  const defaultAnnotations = {
+    "1": {
+      "1": "株式会社サンプル様向け：オフィス移転により環境が変化しています",
+      "2": "定期面談の頻度について特に注目してください",
+    },
+    "2": {
+      "1": "株式会社テスト様向け：新しいオープンオフィス導入の効果を評価してください",
+      "3": "新規事業立ち上げによる業務変化を考慮してください",
+      "6": "リモートワーク制度の導入効果について評価してください",
+    },
+    "3": {
+      "1": "qqq様向け：職場の物理的環境、設備、快適性について評価してください",
+      "2": "上司との意思疎通、フィードバックの質について評価してください",
+      "3": "業務の意義、成長実感、達成感について評価してください",
+      "6": "労働時間と私生活のバランスについて評価してください",
+      "9": "役員、取締役、部長級以上の管理職を指します",
+    },
+  };
+
+  // LocalStorageから読み込んだデータとデフォルトデータをマージ
+  const initializeAnnotations = (): {
+    [customerId: string]: { [questionId: string]: string };
+  } => {
+    const storedAnnotations = loadAnnotationsFromStorage();
+    const mergedAnnotations: {
+      [customerId: string]: { [questionId: string]: string };
+    } = { ...defaultAnnotations };
+
+    // 既存のデータがある場合はマージ
+    Object.keys(storedAnnotations).forEach((customerId) => {
+      mergedAnnotations[customerId] = {
+        ...mergedAnnotations[customerId],
+        ...storedAnnotations[customerId],
+      };
+    });
+
+    return mergedAnnotations;
+  };
+
+  // 顧客別注釈を管理するstate
+  const [customerAnnotations, setCustomerAnnotations] = useState<{
+    [customerId: string]: { [questionId: string]: string };
+  }>(() => initializeAnnotations());
+
+  const [questions] = useState<Question[]>([
     {
       id: "1",
       text: "現在の職場環境に満足していますか？",
       type: "rating",
       category: "職場環境",
-      note: "職場の物理的環境、設備、快適性について評価してください",
       order: 1,
     },
     {
@@ -40,7 +118,6 @@ export const QuestionsProvider: React.FC<QuestionsProviderProps> = ({
       text: "上司とのコミュニケーションは円滑ですか？",
       type: "rating",
       category: "コミュニケーション",
-      note: "上司との意思疎通、フィードバックの質について評価してください",
       order: 2,
     },
     {
@@ -48,7 +125,6 @@ export const QuestionsProvider: React.FC<QuestionsProviderProps> = ({
       text: "仕事にやりがいを感じていますか？",
       type: "rating",
       category: "やりがい",
-      note: "業務の意義、成長実感、達成感について評価してください",
       order: 3,
     },
     {
@@ -70,7 +146,6 @@ export const QuestionsProvider: React.FC<QuestionsProviderProps> = ({
       text: "ワークライフバランスは保たれていますか？",
       type: "rating",
       category: "ワークライフバランス",
-      note: "労働時間と私生活のバランスについて評価してください",
       order: 6,
     },
     {
@@ -92,7 +167,6 @@ export const QuestionsProvider: React.FC<QuestionsProviderProps> = ({
       text: "経営幹部への信頼はありますか？",
       type: "rating",
       category: "経営幹部への信頼",
-      note: "役員、取締役、部長級以上の管理職を指します",
       order: 9,
     },
     {
@@ -132,18 +206,49 @@ export const QuestionsProvider: React.FC<QuestionsProviderProps> = ({
     },
   ]);
 
-  const updateQuestionNote = (questionId: string, note: string) => {
-    setQuestions((prev) =>
-      prev.map((question) =>
-        question.id === questionId
-          ? { ...question, note: note.trim() || undefined }
-          : question
-      )
-    );
+  const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
+
+  const updateQuestionNote = (
+    questionId: string,
+    note: string,
+    customerId: string
+  ) => {
+    const updatedAnnotations = {
+      ...customerAnnotations,
+      [customerId]: {
+        ...customerAnnotations[customerId],
+        [questionId]: note.trim() || "",
+      },
+    };
+
+    setCustomerAnnotations(updatedAnnotations);
+    // LocalStorageに保存
+    saveAnnotationsToStorage(updatedAnnotations);
   };
 
+  // 特定の顧客向けの質問リストを取得（注釈付き）
+  const getQuestionsForCustomer = (customerId: string): Question[] => {
+    const annotations = customerAnnotations[customerId] || {};
+
+    return questions.map((question) => ({
+      ...question,
+      note: annotations[question.id] || undefined,
+    }));
+  };
+
+  // selectedCustomerId が変更されたときに質問リストを更新
+  useEffect(() => {
+    setCurrentQuestions(getQuestionsForCustomer(selectedCustomerId));
+  }, [selectedCustomerId, customerAnnotations]);
+
   return (
-    <QuestionsContext.Provider value={{ questions, updateQuestionNote }}>
+    <QuestionsContext.Provider
+      value={{
+        questions: currentQuestions,
+        updateQuestionNote,
+        getQuestionsForCustomer,
+      }}
+    >
       {children}
     </QuestionsContext.Provider>
   );

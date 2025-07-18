@@ -3,66 +3,163 @@ import { useCustomer } from "../context/CustomerContext";
 import { useAuth } from "../context/AuthContext";
 import CustomerSelector from "../components/CustomerSelector";
 
-// モックデータ
-const mockEmployees = [
-  {
-    employee_id: "E001",
-    employee_name: "山田太郎",
-    mail: "yamada@example.com",
-    department: "開発部",
-    sex: 1,
-    nationality: "日本",
-    generation: 3,
-    length_service: 2,
-    occupation: "エンジニア",
-    position: "チームリーダー",
-    grade: "3級",
-    personnel_evaluation: "B",
-    place: "東京",
-    employment_type: 1,
-    recruitment_kbn: 2,
-    academic_background: 5,
-    role: 3,
-  },
-  {
-    employee_id: "E002",
-    employee_name: "佐藤花子",
-    mail: "sato@example.com",
-    department: "営業部",
-    sex: 2,
-    nationality: "日本",
-    generation: 2,
-    length_service: 1,
-    occupation: "営業",
-    position: "主任",
-    grade: "2級",
-    personnel_evaluation: "A",
-    place: "大阪",
-    employment_type: 1,
-    recruitment_kbn: 1,
-    academic_background: 5,
-    role: 3,
-  },
-  {
-    employee_id: "E003",
-    employee_name: "田中次郎",
-    mail: "tanaka@example.com",
-    department: "人事部",
-    sex: 1,
-    nationality: "日本",
-    generation: 4,
-    length_service: 4,
-    occupation: "人事",
-    position: "課長",
-    grade: "4級",
-    personnel_evaluation: "A",
-    place: "東京",
-    employment_type: 1,
-    recruitment_kbn: 2,
-    academic_background: 5,
-    role: 2,
-  },
-];
+// LocalStorageのキー
+const EMPLOYEES_STORAGE_KEY = "kizu_navi_employees_by_customer";
+
+// LocalStorageから従業員データを読み込む関数
+const loadEmployeesFromStorage = () => {
+  try {
+    const stored = localStorage.getItem(EMPLOYEES_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    console.error("Failed to load employees from localStorage:", error);
+    return null;
+  }
+};
+
+// LocalStorageに従業員データを保存する関数
+const saveEmployeesToStorage = (employeesData: {
+  [key: string]: Employee[];
+}) => {
+  try {
+    localStorage.setItem(EMPLOYEES_STORAGE_KEY, JSON.stringify(employeesData));
+  } catch (error) {
+    console.error("Failed to save employees to localStorage:", error);
+  }
+};
+
+// デフォルト従業員データ
+const defaultEmployeesByCustomer = {
+  "1": [
+    // 株式会社サンプル
+    {
+      employee_id: "E001",
+      employee_name: "山田太郎",
+      mail: "yamada@sample.com",
+      department: "開発部",
+      sex: 1,
+      nationality: "日本",
+      generation: 3,
+      length_service: 2,
+      occupation: "エンジニア",
+      position: "チームリーダー",
+      grade: "3級",
+      personnel_evaluation: "B",
+      place: "東京",
+      employment_type: 1,
+      recruitment_kbn: 2,
+      academic_background: 5,
+      role: 3,
+    },
+    {
+      employee_id: "E004",
+      employee_name: "高橋一郎",
+      mail: "takahashi@sample.com",
+      department: "営業部",
+      sex: 1,
+      nationality: "日本",
+      generation: 4,
+      length_service: 5,
+      occupation: "営業",
+      position: "課長",
+      grade: "4級",
+      personnel_evaluation: "A",
+      place: "東京",
+      employment_type: 1,
+      recruitment_kbn: 1,
+      academic_background: 5,
+      role: 3,
+    },
+  ],
+  "2": [
+    // 株式会社テスト
+    {
+      employee_id: "E002",
+      employee_name: "佐藤花子",
+      mail: "sato@test.com",
+      department: "営業部",
+      sex: 2,
+      nationality: "日本",
+      generation: 2,
+      length_service: 1,
+      occupation: "営業",
+      position: "主任",
+      grade: "2級",
+      personnel_evaluation: "A",
+      place: "大阪",
+      employment_type: 1,
+      recruitment_kbn: 1,
+      academic_background: 5,
+      role: 3,
+    },
+    {
+      employee_id: "E005",
+      employee_name: "鈴木三郎",
+      mail: "suzuki@test.com",
+      department: "人事部",
+      sex: 1,
+      nationality: "日本",
+      generation: 3,
+      length_service: 3,
+      occupation: "人事",
+      position: "係長",
+      grade: "3級",
+      personnel_evaluation: "B",
+      place: "大阪",
+      employment_type: 1,
+      recruitment_kbn: 2,
+      academic_background: 5,
+      role: 2,
+    },
+  ],
+  "3": [
+    // qqq
+    {
+      employee_id: "E003",
+      employee_name: "田中次郎",
+      mail: "tanaka@qqq.com",
+      department: "人事部",
+      sex: 1,
+      nationality: "日本",
+      generation: 4,
+      length_service: 4,
+      occupation: "人事",
+      position: "課長",
+      grade: "4級",
+      personnel_evaluation: "A",
+      place: "東京",
+      employment_type: 1,
+      recruitment_kbn: 2,
+      academic_background: 5,
+      role: 2,
+    },
+    {
+      employee_id: "E006",
+      employee_name: "渡辺美子",
+      mail: "watanabe@qqq.com",
+      department: "総務部",
+      sex: 2,
+      nationality: "日本",
+      generation: 2,
+      length_service: 2,
+      occupation: "事務",
+      position: "主任",
+      grade: "2級",
+      personnel_evaluation: "A",
+      place: "東京",
+      employment_type: 1,
+      recruitment_kbn: 1,
+      academic_background: 4,
+      role: 3,
+    },
+  ],
+};
+
+// 永続化された従業員データの管理
+let persistentEmployeesByCustomer = (() => {
+  const stored = loadEmployeesFromStorage();
+  return stored || { ...defaultEmployeesByCustomer };
+})();
 
 const THEME_COLORS = {
   border: "#e5e7eb",
@@ -91,7 +188,19 @@ interface Employee {
 const EmployeeMaster = () => {
   const { user } = useAuth(); // AuthContextからユーザー情報を取得
   const { selectedCustomerId } = useCustomer();
-  const [employees, setEmployees] = useState(mockEmployees);
+
+  // 選択された顧客に応じた従業員データを取得
+  const getEmployeesForCustomer = (customerId: string): Employee[] => {
+    return (
+      persistentEmployeesByCustomer[
+        customerId as keyof typeof persistentEmployeesByCustomer
+      ] || []
+    );
+  };
+
+  const [employees, setEmployees] = useState<Employee[]>(() =>
+    getEmployeesForCustomer(selectedCustomerId)
+  );
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
@@ -148,9 +257,9 @@ const EmployeeMaster = () => {
 
   // 顧客IDが変更されたときの処理
   useEffect(() => {
-    // 顧客に紐づく従業員データを取得する処理を追加
     console.log(`Selected customer: ${selectedCustomerId}`);
-    // API呼び出しなど
+    const customerEmployees = getEmployeesForCustomer(selectedCustomerId);
+    setEmployees(customerEmployees);
   }, [selectedCustomerId]);
 
   const handleInputChange = (field: string, value: string | number) => {
@@ -194,6 +303,17 @@ const EmployeeMaster = () => {
       // 従業員リストに追加
       setEmployees((prev) => [...prev, employeeData]);
 
+      // 顧客別データも更新（実際のアプリではAPIで処理）
+      persistentEmployeesByCustomer[
+        selectedCustomerId as keyof typeof persistentEmployeesByCustomer
+      ] = [
+        ...(persistentEmployeesByCustomer[
+          selectedCustomerId as keyof typeof persistentEmployeesByCustomer
+        ] || []),
+        employeeData,
+      ];
+      saveEmployeesToStorage(persistentEmployeesByCustomer);
+
       // フォームをリセット
       setNewEmployee({
         employee_id: "",
@@ -235,6 +355,19 @@ const EmployeeMaster = () => {
       try {
         // 従業員を削除
         setEmployees((prev) => prev.filter((emp) => emp.employee_id !== id));
+
+        // 顧客別データも更新（実際のアプリではAPIで処理）
+        const currentCustomerEmployees =
+          persistentEmployeesByCustomer[
+            selectedCustomerId as keyof typeof persistentEmployeesByCustomer
+          ] || [];
+        persistentEmployeesByCustomer[
+          selectedCustomerId as keyof typeof persistentEmployeesByCustomer
+        ] = currentCustomerEmployees.filter(
+          (emp: Employee) => emp.employee_id !== id
+        );
+        saveEmployeesToStorage(persistentEmployeesByCustomer);
+
         setSuccess("従業員が削除されました。");
         setTimeout(() => setSuccess(""), 3000);
       } catch {
@@ -309,6 +442,18 @@ const EmployeeMaster = () => {
         )
       );
 
+      // 顧客別データも更新（実際のアプリではAPIで処理）
+      const currentCustomerEmployees =
+        persistentEmployeesByCustomer[
+          selectedCustomerId as keyof typeof persistentEmployeesByCustomer
+        ] || [];
+      persistentEmployeesByCustomer[
+        selectedCustomerId as keyof typeof persistentEmployeesByCustomer
+      ] = currentCustomerEmployees.map((emp: Employee) =>
+        emp.employee_id === editEmployee.employee_id ? editEmployee : emp
+      );
+      saveEmployeesToStorage(persistentEmployeesByCustomer);
+
       setShowEditModal(false);
       setSuccess("従業員情報が正常に更新されました。");
       setTimeout(() => setSuccess(""), 3000);
@@ -338,6 +483,32 @@ const EmployeeMaster = () => {
         </h1>
         <CustomerSelector />
       </div>
+
+      {/* マスタ権限制限メッセージ */}
+      {user?.role === "master" && (
+        <div className="mb-6 p-4 rounded-lg border-l-4 border-amber-500 bg-amber-50">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-amber-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-amber-700">
+                マスタ権限では従業員情報の閲覧のみ可能です。追加・編集・削除はできません。
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div

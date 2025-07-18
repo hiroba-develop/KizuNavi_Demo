@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
           {/* Mobile menu button */}
           <button
             onClick={onMenuToggle}
-            className="lg:hidden p-1 sm:p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="xl:hidden p-1 sm:p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="メニューを開く"
           >
             <svg

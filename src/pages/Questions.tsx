@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { THEME_COLORS } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useQuestions } from "../context/QuestionsContext";
+import { useCustomer } from "../context/CustomerContext";
 import CustomerSelector from "../components/CustomerSelector";
 
 const Questions: React.FC = () => {
   const { user } = useAuth();
   const { questions, updateQuestionNote } = useQuestions();
+  const { selectedCustomerId } = useCustomer();
   const isMaster = user?.role === "master";
+  const isHR = user?.idType === "hr"; // 人事IDかどうかを判定
 
   const QUESTIONS_PER_PAGE = 10;
   const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
@@ -63,7 +66,7 @@ const Questions: React.FC = () => {
 
   const handleSaveAnnotation = () => {
     if (editingAnnotation) {
-      updateQuestionNote(editingAnnotation, annotationText);
+      updateQuestionNote(editingAnnotation, annotationText, selectedCustomerId);
       setEditingAnnotation(null);
       setAnnotationText("");
     }
@@ -103,72 +106,66 @@ const Questions: React.FC = () => {
           >
             注釈 {showAnnotations ? "▼" : "▶"}
           </button>
-          <button
-            onClick={() => setShowDistributionModal(true)}
-            className="px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors hover:opacity-90"
-            style={{ backgroundColor: THEME_COLORS.accent }}
-          >
-            配信設定
-          </button>
+          {/* 配信設定ボタン - 人事IDのみ */}
+          {isHR && (
+            <button
+              onClick={() => setShowDistributionModal(true)}
+              className="px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors hover:opacity-90"
+              style={{ backgroundColor: THEME_COLORS.accent }}
+            >
+              配信設定
+            </button>
+          )}
         </div>
       </div>
 
       {/* Annotations Panel */}
       {showAnnotations && (
-        <>
-          {/* Overlay to close annotations when clicking outside */}
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setShowAnnotations(false)}
-          />
-          <div
-            className="fixed top-32 right-4 w-80 bg-white rounded-lg shadow-lg border p-4 z-20 max-h-96 overflow-y-auto"
-            style={{ borderColor: THEME_COLORS.border }}
-          >
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="font-semibold text-gray-900">注釈一覧</h3>
-              <button
-                onClick={() => setShowAnnotations(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+        <div
+          className="fixed top-32 right-4 w-80 bg-white rounded-lg shadow-lg border p-4 z-20 max-h-96 overflow-y-auto"
+          style={{ borderColor: THEME_COLORS.border }}
+        >
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-semibold text-gray-900">注釈一覧</h3>
+            <button
+              onClick={() => setShowAnnotations(false)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="space-y-3">
-              {questions
-                .filter((q) => q.note)
-                .sort((a, b) => a.order - b.order)
-                .map((question, index) => (
-                  <div key={question.id} className="text-sm">
-                    <div
-                      className="font-medium text-left"
-                      style={{ color: THEME_COLORS.status.error }}
-                    >
-                      ※{index + 1}
-                    </div>
-                    <div className="text-gray-600 text-left">
-                      {question.note}
-                    </div>
-                  </div>
-                ))}
-              {questions.filter((q) => q.note).length === 0 && (
-                <div className="text-sm text-gray-500">注釈はありません</div>
-              )}
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
-        </>
+          <div className="space-y-3">
+            {questions
+              .filter((q) => q.note)
+              .sort((a, b) => a.order - b.order)
+              .map((question, index) => (
+                <div key={question.id} className="text-sm">
+                  <div
+                    className="font-medium text-left"
+                    style={{ color: THEME_COLORS.status.error }}
+                  >
+                    ※{index + 1}
+                  </div>
+                  <div className="text-gray-600 text-left">{question.note}</div>
+                </div>
+              ))}
+            {questions.filter((q) => q.note).length === 0 && (
+              <div className="text-sm text-gray-500">注釈はありません</div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Questions List */}
@@ -259,7 +256,7 @@ const Questions: React.FC = () => {
                               )
                             )}
                           </div>
-                          {isMaster && editingAnnotation !== question.id && (
+                          {isHR && editingAnnotation !== question.id && (
                             <button
                               onClick={() => handleEditAnnotation(question.id)}
                               className="ml-2 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800"
@@ -273,7 +270,7 @@ const Questions: React.FC = () => {
 
                     {/* Add annotation button for questions without notes - Always visible if master */}
                     {!question.note &&
-                      isMaster &&
+                      isHR &&
                       editingAnnotation !== question.id && (
                         <div className="mt-3">
                           <button

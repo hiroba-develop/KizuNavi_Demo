@@ -126,7 +126,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main Content */}
       <main
-        className={`pt-16 ${!isOnlyMember ? "pb-20 lg:pb-6 lg:ml-64" : "pb-6"}`}
+        className={`pt-16 ${!isOnlyMember ? "pb-20 xl:pb-6 xl:ml-64" : "pb-6"}`}
       >
         <div className="px-4 py-4 sm:px-6 sm:py-6 lg:pl-4 lg:pr-4 lg:py-6 xl:pl-6 xl:pr-6 xl:py-8 max-w-full overflow-x-hidden w-full">
           <div className="mx-auto w-full max-w-7xl ">
