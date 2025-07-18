@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useQuestions } from "../context/QuestionsContext";
-import { useCustomer } from "../context/CustomerContext";
+// import { useCustomer } from "../context/CustomerContext";
 import type { Answer, Survey } from "../types";
 import { THEME_COLORS } from "../types";
 
@@ -10,10 +10,10 @@ const SurveyResponsePage: React.FC = () => {
   const { token } = useParams<{ token?: string }>();
   const { user, logout } = useAuth();
   const { questions, getQuestionsForCustomer } = useQuestions();
-  const { selectedCustomerId } = useCustomer();
+  // const { selectedCustomerId } = useCustomer();
 
   // トークンアクセスの場合はデフォルト顧客（"3"）、認証ユーザーの場合は選択された顧客
-  const currentCustomerId = token ? "3" : selectedCustomerId;
+  // const currentCustomerId = token ? "3" : selectedCustomerId;
   const activeQuestions = token ? getQuestionsForCustomer("3") : questions;
 
   const [survey, setSurvey] = useState<Survey | null>(null);

@@ -9,7 +9,7 @@ const Questions: React.FC = () => {
   const { user } = useAuth();
   const { questions, updateQuestionNote } = useQuestions();
   const { selectedCustomerId } = useCustomer();
-  const isMaster = user?.role === "master";
+  // const isMaster = user?.role === "master";
   const isHR = user?.idType === "hr"; // 人事IDかどうかを判定
 
   const QUESTIONS_PER_PAGE = 10;
