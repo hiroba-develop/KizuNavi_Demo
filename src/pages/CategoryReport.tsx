@@ -50,9 +50,10 @@ const CategoryReport: React.FC = () => {
     data: typeof currentData;
     title: string;
   }) => {
-    const width = 500;
-    const height = 400;
-    const padding = 60;
+    // 横幅を大幅に増やしてX軸ラベルを読みやすく
+    const width = 800; // 500から800に増加
+    const height = 450; // 400から450に増加
+    const padding = 80; // 60から80に増加
     const maxValue = 6;
     const chartHeight = height - 2 * padding;
 
@@ -62,12 +63,14 @@ const CategoryReport: React.FC = () => {
         style={{ borderColor: THEME_COLORS.border }}
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-6">{title}</h3>
-        <div className="flex justify-center w-full">
-          <div className="w-full max-w-lg">
+        <div className="flex justify-center w-full overflow-x-auto">
+          <div className="w-full max-w-4xl min-w-[600px]">
+            {" "}
+            {/* コンテナサイズも拡大 */}
             <svg
               width="100%"
-              height="400"
-              viewBox="0 0 500 400"
+              height="450"
+              viewBox="0 0 800 450"
               preserveAspectRatio="xMidYMid meet"
               xmlns="http://www.w3.org/2000/svg"
               className="w-full h-auto"
@@ -99,9 +102,11 @@ const CategoryReport: React.FC = () => {
 
               {/* Bars */}
               {data.map((item, index) => {
-                const barWidth = (width - padding - 20) / data.length - 8;
+                const barWidth = (width - padding - 40) / data.length - 15; // バー幅を調整
                 const x =
-                  padding + (index * (width - padding - 20)) / data.length + 4;
+                  padding +
+                  (index * (width - padding - 40)) / data.length +
+                  7.5; // 位置調整
                 const barHeight = (item.score / maxValue) * chartHeight;
                 const y = chartHeight - barHeight + padding;
 
@@ -127,16 +132,47 @@ const CategoryReport: React.FC = () => {
                     >
                       {item.score.toFixed(1)}
                     </text>
+                    {/* X軸ラベル - 改行対応 */}
                     <text
                       x={x + barWidth / 2}
-                      y={height - 10}
+                      y={height - 40}
                       textAnchor="middle"
-                      className="text-xs fill-gray-600"
-                      style={{ fontSize: "9px" }}
+                      className="text-sm fill-gray-600"
+                      style={{ fontSize: "12px" }}
                     >
-                      {item.name.length > 6
-                        ? item.name.substring(0, 5) + "..."
-                        : item.name}
+                      {/* 文字列を適切な長さで改行 */}
+                      {(() => {
+                        const label = item.name;
+                        const maxLength = 8; // 横幅が広くなったので長めに設定
+
+                        if (label.length <= maxLength) {
+                          return <tspan>{label}</tspan>;
+                        }
+
+                        // 改行処理
+                        const lines = [];
+                        let currentLine = "";
+                        for (let i = 0; i < label.length; i++) {
+                          currentLine += label[i];
+                          if (
+                            currentLine.length >= maxLength ||
+                            i === label.length - 1
+                          ) {
+                            lines.push(currentLine);
+                            currentLine = "";
+                          }
+                        }
+
+                        return lines.map((line, index) => (
+                          <tspan
+                            key={index}
+                            x={x + barWidth / 2}
+                            dy={index === 0 ? 0 : 15}
+                          >
+                            {line}
+                          </tspan>
+                        ));
+                      })()}
                     </text>
                   </g>
                 );
@@ -244,7 +280,7 @@ const CategoryReport: React.FC = () => {
                 />
               ))}
 
-              {/* Labels */}
+              {/* ラベル - 改行対応 */}
               {points.map((point, index) => {
                 const labelRadius = radius + 60;
                 const angle = index * angleStep - Math.PI / 2;
@@ -258,22 +294,68 @@ const CategoryReport: React.FC = () => {
                     y={labelY}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className="text-xs font-medium fill-gray-600"
-                    style={{ fontSize: "9px" }}
+                    className="text-sm font-medium fill-gray-600"
+                    style={{ fontSize: "11px" }}
                   >
-                    <tspan x={labelX} dy="-0.7em" style={{ fontSize: "11px" }}>
-                      {point.label.length > 8
-                        ? point.label.substring(0, 7) + "..."
-                        : point.label}
-                    </tspan>
-                    <tspan
-                      x={labelX}
-                      dy="1.4em"
-                      className="font-semibold"
-                      style={{ fontSize: "11px" }}
-                    >
-                      {point.value.toFixed(1)}%
-                    </tspan>
+                    {/* 項目名を改行対応で表示 */}
+                    {(() => {
+                      const label = point.label;
+                      const maxLength = 8;
+
+                      if (label.length <= maxLength) {
+                        return (
+                          <>
+                            <tspan x={labelX} dy="-0.7em">
+                              {label}
+                            </tspan>
+                            <tspan
+                              x={labelX}
+                              dy="1.4em"
+                              className="font-semibold"
+                              style={{ fontSize: "11px" }}
+                            >
+                              {point.value.toFixed(1)}%
+                            </tspan>
+                          </>
+                        );
+                      }
+
+                      // 改行処理
+                      const lines = [];
+                      let currentLine = "";
+                      for (let i = 0; i < label.length; i++) {
+                        currentLine += label[i];
+                        if (
+                          currentLine.length >= maxLength ||
+                          i === label.length - 1
+                        ) {
+                          lines.push(currentLine);
+                          currentLine = "";
+                        }
+                      }
+
+                      return (
+                        <>
+                          {lines.map((line, lineIndex) => (
+                            <tspan
+                              key={lineIndex}
+                              x={labelX}
+                              dy={lineIndex === 0 ? "-0.7em" : "1.2em"}
+                            >
+                              {line}
+                            </tspan>
+                          ))}
+                          <tspan
+                            x={labelX}
+                            dy="1.4em"
+                            className="font-semibold"
+                            style={{ fontSize: "11px" }}
+                          >
+                            {point.value.toFixed(1)}%
+                          </tspan>
+                        </>
+                      );
+                    })()}
                   </text>
                 );
               })}

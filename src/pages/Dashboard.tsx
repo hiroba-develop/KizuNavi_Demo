@@ -333,8 +333,9 @@ const Dashboard: React.FC = () => {
   };
 
   const BarChart = ({ data, title }: { data: any[]; title: string }) => {
-    const width = isMobile ? 400 : window.innerWidth >= 1536 ? 600 : 500;
-    const height = isMobile ? 240 : window.innerWidth >= 1536 ? 320 : 280;
+    // SVGサイズを大きく調整
+    const width = isMobile ? 450 : window.innerWidth >= 1536 ? 700 : 600;
+    const height = isMobile ? 280 : window.innerWidth >= 1536 ? 380 : 340;
     const padding = isMobile ? 40 : window.innerWidth >= 1536 ? 80 : 60;
     const maxValue = 6;
     const chartHeight = height - 2 * padding;
@@ -345,7 +346,7 @@ const Dashboard: React.FC = () => {
           {title}
         </h4>
         <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-lg min-w-[320px] sm:min-w-[400px]">
+          <div className="w-full max-w-2xl min-w-[320px] sm:min-w-[450px]">
             <svg
               width="100%"
               height={height}
@@ -424,30 +425,48 @@ const Dashboard: React.FC = () => {
                     >
                       {item.score.toFixed(1)}
                     </text>
+                    {/* X軸ラベル - 改行対応 */}
                     <text
                       x={x + barWidth / 2}
-                      y={height - 10}
+                      y={height - 25}
                       textAnchor="middle"
-                      className="text-xs fill-gray-600"
-                      style={{ fontSize: "10px" }}
+                      className="text-sm fill-gray-600"
+                      style={{ fontSize: "12px" }}
                     >
-                      <tspan>
-                        {(item.name || item.category || item.age || item.tenure)
-                          ?.length > (title === "部門別キズナ度" ? 4 : 6)
-                          ? (
-                              item.name ||
-                              item.category ||
-                              item.age ||
-                              item.tenure
-                            )?.substring(
-                              0,
-                              title === "部門別キズナ度" ? 3 : 5
-                            ) + "..."
-                          : item.name ||
-                            item.category ||
-                            item.age ||
-                            item.tenure}
-                      </tspan>
+                      {/* 文字列を適切な長さで改行 */}
+                      {(() => {
+                        const label =
+                          item.name || item.category || item.age || item.tenure;
+                        const maxLength = title === "部門別キズナ度" ? 4 : 6;
+
+                        if (label.length <= maxLength) {
+                          return <tspan>{label}</tspan>;
+                        }
+
+                        // 改行処理
+                        const lines = [];
+                        let currentLine = "";
+                        for (let i = 0; i < label.length; i++) {
+                          currentLine += label[i];
+                          if (
+                            currentLine.length >= maxLength ||
+                            i === label.length - 1
+                          ) {
+                            lines.push(currentLine);
+                            currentLine = "";
+                          }
+                        }
+
+                        return lines.map((line, index) => (
+                          <tspan
+                            key={index}
+                            x={x + barWidth / 2}
+                            dy={index === 0 ? 0 : 14}
+                          >
+                            {line}
+                          </tspan>
+                        ));
+                      })()}
                     </text>
                   </g>
                 );
@@ -460,10 +479,11 @@ const Dashboard: React.FC = () => {
   };
 
   const RadarChart = ({ data, title }: { data: any[]; title: string }) => {
-    const size = isMobile ? 280 : window.innerWidth >= 1536 ? 400 : 320;
+    // カテゴリ別レポート画面と同じサイズ設定
+    const size = 450;
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = size * 0.35;
+    const radius = 140;
     const maxValue = 6;
 
     const angleStep = (2 * Math.PI) / data.length;
@@ -489,11 +509,11 @@ const Dashboard: React.FC = () => {
           {title}
         </h4>
         <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-sm min-w-[280px] sm:min-w-[320px]">
+          <div className="w-full max-w-md min-w-[450px]">
             <svg
               width="100%"
-              height={size}
-              viewBox={`0 0 ${size} ${size}`}
+              height="450"
+              viewBox="0 0 450 450"
               preserveAspectRatio="xMidYMid meet"
               className="overflow-visible w-full h-auto"
               xmlns="http://www.w3.org/2000/svg"
@@ -563,34 +583,60 @@ const Dashboard: React.FC = () => {
                 </g>
               ))}
 
-              {/* Labels */}
+              {/* ラベル - カテゴリ別レポート画面と同じスタイル */}
               {points.map((point, index) => {
-                const labelRadius = radius + (isMobile ? 35 : 45);
+                const labelRadius = radius + 60;
                 const angle = index * angleStep - Math.PI / 2;
                 const labelX = centerX + Math.cos(angle) * labelRadius;
                 const labelY = centerY + Math.sin(angle) * labelRadius;
-
-                // Adjust text anchor based on position to prevent overlap
-                let textAnchor = "middle";
-                if (labelX < centerX - (isMobile ? 20 : 30)) textAnchor = "end";
-                else if (labelX > centerX + (isMobile ? 20 : 30))
-                  textAnchor = "start";
 
                 return (
                   <text
                     key={index}
                     x={labelX}
                     y={labelY}
-                    textAnchor={textAnchor}
+                    textAnchor="middle"
                     dominantBaseline="middle"
-                    className="text-xs sm:text-sm font-medium fill-gray-600"
-                    style={{ fontSize: isMobile ? "9px" : "11px" }}
+                    className="text-sm font-medium fill-gray-600"
+                    style={{ fontSize: "11px" }}
                   >
-                    <tspan>
-                      {point.label.length > (isMobile ? 6 : 8)
-                        ? point.label.substring(0, isMobile ? 5 : 7) + "..."
-                        : point.label}
-                    </tspan>
+                    {/* 項目名を改行対応で表示 */}
+                    {(() => {
+                      const label = point.label;
+                      const maxLength = 8;
+
+                      if (label.length <= maxLength) {
+                        return (
+                          <tspan x={labelX} dy="-0.7em">
+                            {label}
+                          </tspan>
+                        );
+                      }
+
+                      // 改行処理
+                      const lines = [];
+                      let currentLine = "";
+                      for (let i = 0; i < label.length; i++) {
+                        currentLine += label[i];
+                        if (
+                          currentLine.length >= maxLength ||
+                          i === label.length - 1
+                        ) {
+                          lines.push(currentLine);
+                          currentLine = "";
+                        }
+                      }
+
+                      return lines.map((line, lineIndex) => (
+                        <tspan
+                          key={lineIndex}
+                          x={labelX}
+                          dy={lineIndex === 0 ? "-0.7em" : "1.2em"}
+                        >
+                          {line}
+                        </tspan>
+                      ));
+                    })()}
                   </text>
                 );
               })}
@@ -602,8 +648,9 @@ const Dashboard: React.FC = () => {
   };
 
   const LineChart = ({ data, title }: { data: any[]; title: string }) => {
-    const width = isMobile ? 400 : window.innerWidth >= 1536 ? 600 : 500;
-    const height = isMobile ? 280 : window.innerWidth >= 1536 ? 360 : 320;
+    // 線グラフのサイズを大きく調整
+    const width = isMobile ? 450 : window.innerWidth >= 1536 ? 700 : 600;
+    const height = isMobile ? 320 : window.innerWidth >= 1536 ? 420 : 380;
     const padding = isMobile ? 40 : window.innerWidth >= 1536 ? 80 : 60;
     const maxValue = 6;
 
@@ -624,7 +671,7 @@ const Dashboard: React.FC = () => {
           {title}
         </h4>
         <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-lg min-w-[320px] sm:min-w-[400px]">
+          <div className="w-full max-w-2xl min-w-[320px] sm:min-w-[450px]">
             <svg
               width="100%"
               height={height}
@@ -661,21 +708,49 @@ const Dashboard: React.FC = () => {
                 );
               })}
 
-              {/* X-axis labels */}
+              {/* X軸ラベル - 改行対応 */}
               {points.map((point, index) => (
                 <text
                   key={index}
                   x={point.x}
-                  y={height - 10}
+                  y={height - 25}
                   textAnchor="middle"
-                  className="text-xs fill-gray-600"
-                  style={{ fontSize: "11px" }}
+                  className="text-sm fill-gray-600"
+                  style={{ fontSize: "12px" }}
                 >
-                  <tspan>
-                    {point.label.length > 6
-                      ? point.label.substring(0, 5) + "..."
-                      : point.label}
-                  </tspan>
+                  {/* 文字列を適切な長さで改行 */}
+                  {(() => {
+                    const label = point.label;
+                    const maxLength = 6;
+
+                    if (label.length <= maxLength) {
+                      return <tspan>{label}</tspan>;
+                    }
+
+                    // 改行処理
+                    const lines = [];
+                    let currentLine = "";
+                    for (let i = 0; i < label.length; i++) {
+                      currentLine += label[i];
+                      if (
+                        currentLine.length >= maxLength ||
+                        i === label.length - 1
+                      ) {
+                        lines.push(currentLine);
+                        currentLine = "";
+                      }
+                    }
+
+                    return lines.map((line, lineIndex) => (
+                      <tspan
+                        key={lineIndex}
+                        x={point.x}
+                        dy={lineIndex === 0 ? 0 : 14}
+                      >
+                        {line}
+                      </tspan>
+                    ));
+                  })()}
                 </text>
               ))}
 

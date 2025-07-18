@@ -31,11 +31,11 @@ const SurveyResponsePage: React.FC = () => {
   const ratingLabels = [
     "該当しない",
     "全く思わない",
+    "思わない",
     "あまり思わない",
-    "どちらでもない",
+    "少し思う",
     "そう思う",
     "強くそう思う",
-    "非常に強くそう思う",
   ];
 
   // Get annotation number for a question based on all questions with notes

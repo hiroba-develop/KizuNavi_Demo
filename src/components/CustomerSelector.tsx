@@ -37,7 +37,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
   return (
     <div className="flex items-center space-x-4">
       <div className="flex items-center space-x-2">
-        <span className="text-sm font-medium text-gray-700">顧客選択:</span>
+        <span className="text-sm font-medium text-gray-700">顧客名:</span>
         {isMaster ? (
           <select
             value={selectedCustomerId}

@@ -9,8 +9,10 @@ const Questions: React.FC = () => {
   const { user } = useAuth();
   const { questions, updateQuestionNote } = useQuestions();
   const { selectedCustomerId } = useCustomer();
-  // const isMaster = user?.role === "master";
-  const isHR = user?.idType === "hr"; // 人事IDかどうかを判定
+
+  // 権限判定：人事IDかつマスタ権限でない場合のみ編集可能
+  const isMaster = user?.role === "master";
+  const isHR = user?.idType === "hr" && !isMaster; // 人事IDかつ非マスタのみ
 
   const QUESTIONS_PER_PAGE = 10;
   const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
@@ -75,6 +77,13 @@ const Questions: React.FC = () => {
   const handleCancelAnnotation = () => {
     setEditingAnnotation(null);
     setAnnotationText("");
+  };
+
+  // 注釈削除処理
+  const handleDeleteAnnotation = (questionId: string) => {
+    if (window.confirm("この注釈を削除してもよろしいですか？")) {
+      updateQuestionNote(questionId, "", selectedCustomerId);
+    }
   };
 
   // 配信設定の保存処理（APIを使わないモック実装）
@@ -152,13 +161,41 @@ const Questions: React.FC = () => {
               .sort((a, b) => a.order - b.order)
               .map((question, index) => (
                 <div key={question.id} className="text-sm">
-                  <div
-                    className="font-medium text-left"
-                    style={{ color: THEME_COLORS.status.error }}
-                  >
-                    ※{index + 1}
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div
+                        className="font-medium text-left"
+                        style={{ color: THEME_COLORS.status.error }}
+                      >
+                        ※{index + 1}
+                      </div>
+                      <div className="text-gray-600 text-left">
+                        {question.note}
+                      </div>
+                    </div>
+                    {/* 人事IDのみ削除ボタンを表示 */}
+                    {isHR && (
+                      <button
+                        onClick={() => handleDeleteAnnotation(question.id)}
+                        className="ml-2 p-1 text-gray-400 hover:text-red-600 transition-colors flex-shrink-0"
+                        title="注釈を削除"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    )}
                   </div>
-                  <div className="text-gray-600 text-left">{question.note}</div>
                 </div>
               ))}
             {questions.filter((q) => q.note).length === 0 && (
@@ -256,19 +293,47 @@ const Questions: React.FC = () => {
                               )
                             )}
                           </div>
+                          {/* 人事IDのみ編集・削除ボタンを表示 */}
                           {isHR && editingAnnotation !== question.id && (
-                            <button
-                              onClick={() => handleEditAnnotation(question.id)}
-                              className="ml-2 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800"
-                            >
-                              {question.note ? "編集" : "注釈を追加"}
-                            </button>
+                            <div className="flex space-x-2 ml-2">
+                              <button
+                                onClick={() =>
+                                  handleEditAnnotation(question.id)
+                                }
+                                className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800"
+                              >
+                                {question.note ? "編集" : "注釈を追加"}
+                              </button>
+                              {question.note && (
+                                <button
+                                  onClick={() =>
+                                    handleDeleteAnnotation(question.id)
+                                  }
+                                  className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                                  title="注釈を削除"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                    />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
                     )}
 
-                    {/* Add annotation button for questions without notes - Always visible if master */}
+                    {/* 人事IDのみ注釈追加ボタンを表示 */}
                     {!question.note &&
                       isHR &&
                       editingAnnotation !== question.id && (

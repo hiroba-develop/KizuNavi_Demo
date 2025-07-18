@@ -213,16 +213,47 @@ const SummaryReport: React.FC = () => {
                     >
                       {item.score.toFixed(1)}
                     </text>
+                    {/* X軸ラベル - 改行対応 */}
                     <text
                       x={x + barWidth / 2}
-                      y={height - 10}
+                      y={height - 30}
                       textAnchor="middle"
-                      className="text-xs fill-gray-600"
-                      style={{ fontSize: "10px" }}
+                      className="text-sm fill-gray-600"
+                      style={{ fontSize: "12px" }}
                     >
-                      {item.name.length > 8
-                        ? item.name.substring(0, 7) + "..."
-                        : item.name}
+                      {/* 文字列を適切な長さで改行 */}
+                      {(() => {
+                        const label = item.name;
+                        const maxLength = 8;
+
+                        if (label.length <= maxLength) {
+                          return <tspan>{label}</tspan>;
+                        }
+
+                        // 改行処理
+                        const lines = [];
+                        let currentLine = "";
+                        for (let i = 0; i < label.length; i++) {
+                          currentLine += label[i];
+                          if (
+                            currentLine.length >= maxLength ||
+                            i === label.length - 1
+                          ) {
+                            lines.push(currentLine);
+                            currentLine = "";
+                          }
+                        }
+
+                        return lines.map((line, index) => (
+                          <tspan
+                            key={index}
+                            x={x + barWidth / 2}
+                            dy={index === 0 ? 0 : 14}
+                          >
+                            {line}
+                          </tspan>
+                        ));
+                      })()}
                     </text>
                   </g>
                 );
@@ -330,7 +361,7 @@ const SummaryReport: React.FC = () => {
                 />
               ))}
 
-              {/* Labels */}
+              {/* ラベル - 改行対応 */}
               {points.map((point, index) => {
                 const labelRadius = radius + 50;
                 const angle = index * angleStep - Math.PI / 2;
@@ -344,22 +375,68 @@ const SummaryReport: React.FC = () => {
                     y={labelY}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className="text-xs font-medium fill-gray-600"
-                    style={{ fontSize: "10px" }}
+                    className="text-sm font-medium fill-gray-600"
+                    style={{ fontSize: "12px" }}
                   >
-                    <tspan x={labelX} dy="-0.7em" style={{ fontSize: "11px" }}>
-                      {point.label.length > 8
-                        ? point.label.substring(0, 7) + "..."
-                        : point.label}
-                    </tspan>
-                    <tspan
-                      x={labelX}
-                      dy="1.4em"
-                      className="font-semibold"
-                      style={{ fontSize: "11px" }}
-                    >
-                      {point.value.toFixed(1)}%
-                    </tspan>
+                    {/* 項目名を改行対応で表示 */}
+                    {(() => {
+                      const label = point.label;
+                      const maxLength = 8;
+
+                      if (label.length <= maxLength) {
+                        return (
+                          <>
+                            <tspan x={labelX} dy="-0.7em">
+                              {label}
+                            </tspan>
+                            <tspan
+                              x={labelX}
+                              dy="1.4em"
+                              className="font-semibold"
+                              style={{ fontSize: "12px" }}
+                            >
+                              {point.value.toFixed(1)}%
+                            </tspan>
+                          </>
+                        );
+                      }
+
+                      // 改行処理
+                      const lines = [];
+                      let currentLine = "";
+                      for (let i = 0; i < label.length; i++) {
+                        currentLine += label[i];
+                        if (
+                          currentLine.length >= maxLength ||
+                          i === label.length - 1
+                        ) {
+                          lines.push(currentLine);
+                          currentLine = "";
+                        }
+                      }
+
+                      return (
+                        <>
+                          {lines.map((line, lineIndex) => (
+                            <tspan
+                              key={lineIndex}
+                              x={labelX}
+                              dy={lineIndex === 0 ? "-0.7em" : "1.2em"}
+                            >
+                              {line}
+                            </tspan>
+                          ))}
+                          <tspan
+                            x={labelX}
+                            dy="1.4em"
+                            className="font-semibold"
+                            style={{ fontSize: "12px" }}
+                          >
+                            {point.value.toFixed(1)}%
+                          </tspan>
+                        </>
+                      );
+                    })()}
                   </text>
                 );
               })}
