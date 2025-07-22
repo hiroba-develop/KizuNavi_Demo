@@ -56,10 +56,65 @@ const CustomerMaster: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isNewMode, setIsNewMode] = useState(false);
+
+  // 新規作成ボタンのハンドラー
+  const handleNewCreate = () => {
+    setIsNewMode(true);
+    setCompanyData({
+      name: "",
+      nameKana: "",
+      address: "",
+      postalCode: "",
+      industry: "",
+      phoneNumber: "",
+      email: "",
+      contractModel: "",
+      contractDate: "",
+      paymentCycle: "",
+      salesPersonIds: [""],
+    });
+    setError("");
+    setSuccess("");
+  };
+
+  // キャンセルボタンのハンドラー
+  const handleCancel = () => {
+    setIsNewMode(false);
+    setError("");
+    setSuccess("");
+    // 元の顧客データに戻す
+    if (selectedCustomerId) {
+      const persistentData = persistentCompaniesData[selectedCustomerId];
+      if (persistentData) {
+        setCompanyData(persistentData);
+      } else {
+        const selectedCompany = customers.find(
+          (company) => company.id === selectedCustomerId
+        );
+        if (selectedCompany) {
+          const defaultData = {
+            name: selectedCompany.name,
+            nameKana: "",
+            address: "",
+            postalCode: "",
+            industry: "",
+            phoneNumber: "",
+            email: "",
+            contractModel: "",
+            contractDate: "",
+            paymentCycle: "",
+            salesPersonIds: [""],
+          };
+          setCompanyData(defaultData);
+        }
+      }
+    }
+  };
 
   // 選択された顧客IDに基づいて会社データを更新
   useEffect(() => {
-    if (selectedCustomerId) {
+    if (selectedCustomerId && !isNewMode) {
       // 永続化されたデータを最初に確認
       const persistentData = persistentCompaniesData[selectedCustomerId];
 
@@ -92,7 +147,7 @@ const CustomerMaster: React.FC = () => {
         }
       }
     }
-  }, [selectedCustomerId, customers]);
+  }, [selectedCustomerId, customers, isNewMode]);
 
   const handleCompanyChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -105,8 +160,8 @@ const CustomerMaster: React.FC = () => {
 
     setCompanyData(updatedData);
 
-    // 選択された顧客のデータをLocalStorageに保存
-    if (selectedCustomerId) {
+    // 新規作成モードでない場合のみLocalStorageに保存
+    if (selectedCustomerId && !isNewMode) {
       persistentCompaniesData[selectedCustomerId] = updatedData;
       saveCompaniesToStorage(persistentCompaniesData);
     }
@@ -151,8 +206,8 @@ const CustomerMaster: React.FC = () => {
         companyData
       );
 
-      // 登録成功後、会社一覧に追加（デモ用）
-      if (!selectedCustomerId) {
+      if (isNewMode) {
+        // 新規登録の場合
         const newCompany: Company = {
           id: `${customers.length + 1}`,
           name: companyData.name || "",
@@ -168,8 +223,8 @@ const CustomerMaster: React.FC = () => {
           salesPersonIds: companyData.salesPersonIds || [""],
           employees: [],
         };
-        // setCompanies([...companies, newCompany]); // This line was removed as per the new_code
         setSelectedCustomerId(newCompany.id);
+        setIsNewMode(false);
       } else {
         // 既存の会社情報を更新（デモ用）
         customers.map((company) => {
@@ -191,14 +246,17 @@ const CustomerMaster: React.FC = () => {
           }
           return company;
         });
-        // setCompanies(updatedCompanies); // This line was removed as per the new_code
       }
 
       // 成功メッセージを表示（APIは呼び出さない）
-      setSuccess("企業情報が正常に登録されました。");
+      setSuccess(
+        isNewMode
+          ? "企業情報が正常に新規登録されました。"
+          : "企業情報が正常に保存されました。"
+      );
 
       // 永続化データも更新
-      if (selectedCustomerId) {
+      if (selectedCustomerId && !isNewMode) {
         persistentCompaniesData[selectedCustomerId] = companyData;
         saveCompaniesToStorage(persistentCompaniesData);
       }
@@ -220,7 +278,18 @@ const CustomerMaster: React.FC = () => {
         <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
           基本情報登録
         </h1>
-        <CustomerSelector />
+        <div className="flex items-center space-x-4">
+          <CustomerSelector />
+          {isMaster && !isNewMode && (
+            <button
+              onClick={handleNewCreate}
+              className="text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 hover:opacity-90"
+              style={{ backgroundColor: THEME_COLORS.accent }}
+            >
+              新規登録
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 基本情報 */}
@@ -523,14 +592,33 @@ const CustomerMaster: React.FC = () => {
 
         {/* Submit Button - Only visible for master users */}
         {isMaster && (
-          <div className="flex justify-end">
+          <div className="flex justify-end space-x-4">
+            {isNewMode && (
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="border font-medium py-3 px-8 rounded-lg transition-colors duration-200 hover:bg-gray-50"
+                style={{
+                  borderColor: THEME_COLORS.border,
+                  color: "#6B7280",
+                }}
+              >
+                キャンセル
+              </button>
+            )}
             <button
               type="submit"
               disabled={isLoading}
               className="text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: THEME_COLORS.accent }}
             >
-              {isLoading ? "登録中..." : "登録する"}
+              {isLoading
+                ? isNewMode
+                  ? "登録中..."
+                  : "保存中..."
+                : isNewMode
+                ? "登録する"
+                : "保存する"}
             </button>
           </div>
         )}

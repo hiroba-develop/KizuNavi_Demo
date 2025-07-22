@@ -35,8 +35,8 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       href: "/dashboard",
       icon: "home",
       permission: "canViewDashboard" as const,
-      color: "text-[#2C9AEF]",
-      bgColor: "bg-[#71D3D8]/10",
+      color: "text-blue-500",
+      bgColor: "bg-blue-50",
       requiresIDType: "hr",
     },
     {
@@ -44,8 +44,8 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       href: "/questions",
       icon: "send",
       permission: "canManageQuestions" as const,
-      color: "text-[#2C9AEF]",
-      bgColor: "bg-[#71D3D8]/10",
+      color: "text-blue-500",
+      bgColor: "bg-blue-50",
       requiresIDType: "hr",
     },
     {
@@ -53,8 +53,8 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       href: "#",
       icon: "chart",
       permission: "canViewReports" as const,
-      color: "text-[#2C9AEF]",
-      bgColor: "bg-[#71D3D8]/10",
+      color: "text-blue-500",
+      bgColor: "bg-blue-50",
       requiresIDType: "hr",
       subItems: [
         {
@@ -72,9 +72,8 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       href: "#",
       icon: "building",
       permission: "canManageCustomers" as const,
-      color: "text-[#2C9AEF]",
-      bgColor: "bg-[#71D3D8]/10",
-      // マスター権限でも表示できるようにrequiresIDTypeを削除
+      color: "text-blue-500",
+      bgColor: "bg-blue-50",
       subItems: [
         {
           name: "基本情報登録",
@@ -91,8 +90,8 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       href: "/survey",
       icon: "clipboard-list",
       permission: "canAnswerSurvey" as const,
-      color: "text-[#2C9AEF]",
-      bgColor: "bg-[#71D3D8]/10",
+      color: "text-blue-500",
+      bgColor: "bg-blue-50",
     },
   ];
 
@@ -174,7 +173,9 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
   };
 
   const getIcon = (iconName: string, isActive: boolean = false) => {
-    const iconClass = `w-6 h-6 ${isActive ? "text-current" : "text-gray-600"}`;
+    const iconClass = `w-5 h-5 ${
+      isActive ? `text-[${THEME_COLORS.accent}]` : "text-gray-500"
+    } group-hover:text-gray-900`;
 
     switch (iconName) {
       case "home":
@@ -225,38 +226,6 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
             />
           </svg>
         );
-      case "chart-bar":
-        return (
-          <svg
-            className={iconClass}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-        );
-      case "users":
-        return (
-          <svg
-            className={iconClass}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-            />
-          </svg>
-        );
       case "building":
         return (
           <svg
@@ -270,22 +239,6 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
               strokeLinejoin="round"
               strokeWidth={2}
               d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-            />
-          </svg>
-        );
-      case "user-plus":
-        return (
-          <svg
-            className={iconClass}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
             />
           </svg>
         );
@@ -315,7 +268,7 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       {/* Overlay for mobile navigation */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 xl:hidden"
+          className="fixed inset-0 bg-black bg-opacity-20 z-30 lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -323,40 +276,33 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
 
       {/* Navigation sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen pt-16 pb-6 transition-transform duration-300 bg-white border-r border-gray-200 w-64 xl:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 h-screen pt-20 pb-4 bg-white border-r w-64 lg:translate-x-0 transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } shadow-lg xl:shadow-none`}
+        }`}
         style={{ borderColor: THEME_COLORS.border }}
       >
-        <div className="h-full px-3 py-4 overflow-y-auto">
-          <ul className="space-y-1 sm:space-y-2">
+        <div className="h-full px-4 overflow-y-auto">
+          <ul className="space-y-2">
             {visibleItems.map((item) => {
               const isActive = isActiveItem(item);
               return (
-                <li key={item.name} className="w-full">
+                <li key={item.name}>
                   {item.subItems ? (
-                    <div className="w-full">
+                    <div>
                       <button
                         onClick={() => toggleExpanded(item.name)}
-                        className={`flex items-center w-full p-2 sm:p-3 text-sm sm:text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 group transition-colors duration-200 ${
-                          isActive ? item.bgColor : ""
+                        className={`flex items-center w-full p-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 group transition-colors duration-200 ${
+                          isActive ? "bg-gray-100 text-gray-900" : ""
                         }`}
                         aria-expanded={isExpanded(item.name)}
-                        aria-label={`${item.name}メニューを${
-                          isExpanded(item.name) ? "閉じる" : "開く"
-                        }`}
                       >
-                        <span
-                          className={`mr-2 sm:mr-3 ${
-                            isActive ? item.color : ""
-                          }`}
-                        >
+                        <span className="mr-3">
                           {getIcon(item.icon, isActive)}
                         </span>
                         <span className="flex-1 text-left">{item.name}</span>
                         <svg
-                          className={`w-4 h-4 sm:w-5 sm:h-5 transform transition-transform duration-200 ${
-                            isExpanded(item.name) ? "rotate-180" : "rotate-0"
+                          className={`w-4 h-4 transform transition-transform duration-200 ${
+                            isExpanded(item.name) ? "rotate-180" : ""
                           }`}
                           fill="none"
                           stroke="currentColor"
@@ -371,7 +317,7 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
                         </svg>
                       </button>
                       {isExpanded(item.name) && (
-                        <ul className="ml-4 sm:ml-6 mt-1 sm:mt-2 space-y-1 sm:space-y-2 w-full">
+                        <ul className="pl-8 mt-2 space-y-2">
                           {(user?.idType === "hr" &&
                           user?.role !== "master" &&
                           item.name === "顧客情報"
@@ -380,12 +326,12 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
                               )
                             : item.subItems
                           )?.map((subItem) => (
-                            <li key={subItem.name} className="w-full">
+                            <li key={subItem.name}>
                               <NavLink
                                 to={subItem.href}
                                 onClick={onClose}
                                 className={({ isActive }) =>
-                                  `flex items-center p-2 text-sm sm:text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 w-full transition-colors duration-200 ${
+                                  `flex items-center p-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 w-full transition-colors duration-200 ${
                                     isActive ? "bg-gray-100 text-gray-900" : ""
                                   }`
                                 }
@@ -402,14 +348,12 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
                       to={item.href}
                       onClick={onClose}
                       className={({ isActive }) =>
-                        `flex items-center p-2 sm:p-3 text-sm sm:text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 w-full transition-colors duration-200 ${
-                          isActive ? item.bgColor : ""
+                        `flex items-center p-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 group w-full transition-colors duration-200 ${
+                          isActive ? "bg-gray-100 text-gray-900" : ""
                         }`
                       }
                     >
-                      <span
-                        className={`mr-2 sm:mr-3 ${isActive ? item.color : ""}`}
-                      >
+                      <span className="mr-3">
                         {getIcon(item.icon, isActive)}
                       </span>
                       <span>{item.name}</span>
