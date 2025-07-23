@@ -77,7 +77,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   // Different layout handling based on user role and idType
-  const isOnlyMember = user?.role === "member";
+  // const isOnlyMember = user?.role === "member";
   const isEmployee = user?.idType === "employee";
 
   // アクセス制限表示の設定

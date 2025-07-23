@@ -29,12 +29,12 @@ const Dashboard: React.FC = () => {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
-  const [isMobile, setIsMobile] = useState(false);
+  // const [isMobile, setIsMobile] = useState(false);
 
   // モバイルデバイスの検出
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
+      // setIsMobile(window.innerWidth < 640);
     };
 
     checkMobile();
