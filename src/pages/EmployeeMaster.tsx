@@ -594,61 +594,58 @@ const EmployeeMaster = () => {
                   onClick={() => handleEmployeeClick(employee)}
                   className="group relative bg-gradient-to-r from-white to-gray-50 rounded-xl border-2 border-gray-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-0.5"
                 >
-                  <div className="p-6">
-                    <div className="flex items-center justify-between">
+                  <div className="px-2 py-3 sm:px-3 sm:py-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                       {/* 左側：アバターと基本情報 */}
-                      <div className="flex items-center space-x-6 flex-1">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-lg">
-                          {employee.employee_name?.charAt(0) || "?"}
-                        </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="hidden sm:grid sm:grid-cols-3 sm:gap-x-4 items-center">
+                          <div className="flex items-center space-x-2 truncate">
+                            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                              {employee.employee_name || "名前未設定"}
+                            </h3>
+                          </div>
+                          <div className="flex items-center space-x-2 truncate">
+                            <svg
+                              className="w-4 h-4 text-gray-400 flex-shrink-0"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                              />
+                            </svg>
+                            <span className="text-sm text-gray-600 truncate">
+                              {employee.mail}
+                            </span>
+                          </div>
 
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                            {employee.employee_name || "名前未設定"}
-                          </h3>
-                          <p className="text-sm text-gray-500 truncate">
-                            {employee.mail}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                          <svg
-                            className="w-4 h-4 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                            />
-                          </svg>
-                          <span className="text-sm font-medium text-gray-700 min-w-0">
-                            {employee.department}
-                          </span>
+                          <div className="flex items-center space-x-2">
+                            <svg
+                              className="w-4 h-4 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                              />
+                            </svg>
+                            <span className="text-sm font-medium text-gray-700 min-w-0">
+                              {employee.department}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
                       {/* 右側：権限と削除ボタン */}
                       <div className="flex items-center space-x-4 relative z-10">
-                        <span
-                          className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                            employee.role === 1
-                              ? "bg-purple-100 text-purple-800"
-                              : employee.role === 2
-                              ? "bg-green-100 text-green-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {employee.role === 1
-                            ? "マスタ"
-                            : employee.role === 2
-                            ? "アドミン"
-                            : "メンバー"}
-                        </span>
-
                         {/* 人事IDの場合のみ削除ボタンを表示 */}
                         {isHRUser() && !isMasterUser() && (
                           <button

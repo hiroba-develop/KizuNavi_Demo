@@ -28,13 +28,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
       className="fixed top-0 left-0 right-0 bg-white shadow-md z-50"
       style={{ borderColor: THEME_COLORS.border, borderBottomWidth: "1px" }}
     >
-      <div className="flex justify-between items-center h-16 px-2 sm:px-4 lg:px-6">
+      <div className="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
         {/* Left side - Logo and Mobile menu button */}
         <div className="flex items-center space-x-2 sm:space-x-4">
           {/* Mobile menu button */}
           <button
             onClick={onMenuToggle}
-            className="xl:hidden p-1 sm:p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="lg:hidden p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             aria-label="メニューを開く"
           >
             <svg
@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
           </button>
 
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center flex-shrink-0">
             <svg
               width="120"
               height="28"
@@ -145,8 +145,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
                 </linearGradient>
               </defs>
             </svg>
-            <div className="hidden md:block">
-              <span className="text-xs text-gray-500">
+            <div className="hidden lg:block ml-3">
+              <span className="text-sm text-gray-500">
                 エンゲージメント分析システム
               </span>
             </div>
@@ -154,7 +154,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
         </div>
 
         {/* Right side - User menu */}
-        <div className="flex items-center space-x-1 sm:space-x-3">
+        <div className="flex items-center">
           {/* User menu */}
           <div className="relative">
             <button
@@ -163,7 +163,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
               aria-label="ユーザーメニュー"
             >
               <div className="hidden sm:block text-left">
-                <div className="text-sm font-medium text-gray-900 truncate max-w-[120px] md:max-w-none">
+                <div className="text-sm font-medium text-gray-900 truncate max-w-[100px] md:max-w-xs">
                   {user?.email}
                 </div>
               </div>

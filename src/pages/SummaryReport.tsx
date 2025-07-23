@@ -201,9 +201,7 @@ const SummaryReport: React.FC = () => {
                       fill="#2C9AEF"
                       rx="2"
                       className="hover:opacity-80 cursor-pointer"
-                    >
-                      <title>{`${item.name}: ${item.score.toFixed(1)}`}</title>
-                    </rect>
+                    ></rect>
                     {/* Value label on top of bar */}
                     <text
                       x={x + barWidth / 2}
@@ -492,7 +490,7 @@ const SummaryReport: React.FC = () => {
                 className="border-b"
                 style={{ borderColor: THEME_COLORS.border }}
               >
-                <th className="text-left py-3 px-4 font-medium text-gray-900">
+                <th className="py-3 px-4 font-medium text-gray-900 text-base">
                   指標
                 </th>
                 {data.map((metric) => (
@@ -500,13 +498,8 @@ const SummaryReport: React.FC = () => {
                     key={metric.name}
                     className="text-center py-3 px-2 font-medium text-gray-900 min-w-[120px]"
                   >
-                    <div className="text-xs whitespace-nowrap">
-                      <span className="hidden lg:inline">{metric.name}</span>
-                      <span className="lg:hidden">
-                        {metric.name.length > 8
-                          ? metric.name.substring(0, 7) + "..."
-                          : metric.name}
-                      </span>
+                    <div className="text-sm lg:text-base whitespace-nowrap">
+                      <span>{metric.name}</span>
                     </div>
                   </th>
                 ))}
@@ -517,23 +510,25 @@ const SummaryReport: React.FC = () => {
                 className="border-b"
                 style={{ borderColor: THEME_COLORS.border }}
               >
-                <td className="py-3 px-4 font-medium text-gray-700">スコア</td>
+                <td className="py-3 px-4 font-medium text-gray-700 text-base">
+                  スコア
+                </td>
                 {data.map((metric) => (
                   <td key={metric.name} className="text-center py-3 px-2">
-                    <span className="font-semibold text-blue-600">
+                    <span className="font-semibold text-blue-600 text-lg">
                       {metric.score.toFixed(1)}
                     </span>
                   </td>
                 ))}
               </tr>
               <tr>
-                <td className="py-3 px-4 font-medium text-gray-700">
+                <td className="py-3 px-4 font-medium text-gray-700 text-base">
                   ポジティブ割合
                 </td>
                 {data.map((metric) => (
                   <td key={metric.name} className="text-center py-3 px-2">
                     <span
-                      className="font-semibold"
+                      className="font-semibold text-lg"
                       style={{ color: "#71D3D8" }}
                     >
                       {metric.positiveRate.toFixed(1)}%

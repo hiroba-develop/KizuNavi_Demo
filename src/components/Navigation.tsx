@@ -35,8 +35,8 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       href: "/dashboard",
       icon: "home",
       permission: "canViewDashboard" as const,
-      color: "text-blue-500",
-      bgColor: "bg-blue-50",
+      color: "text-[#2C9AEF]",
+      bgColor: "bg-[#71D3D8]/10",
       requiresIDType: "hr",
     },
     {
@@ -44,8 +44,8 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       href: "/questions",
       icon: "send",
       permission: "canManageQuestions" as const,
-      color: "text-blue-500",
-      bgColor: "bg-blue-50",
+      color: "text-[#2C9AEF]",
+      bgColor: "bg-[#71D3D8]/10",
       requiresIDType: "hr",
     },
     {
@@ -53,8 +53,8 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       href: "#",
       icon: "chart",
       permission: "canViewReports" as const,
-      color: "text-blue-500",
-      bgColor: "bg-blue-50",
+      color: "text-[#2C9AEF]",
+      bgColor: "bg-[#71D3D8]/10",
       requiresIDType: "hr",
       subItems: [
         {
@@ -70,10 +70,10 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
     {
       name: "顧客情報",
       href: "#",
-      icon: "building",
+      icon: "users",
       permission: "canManageCustomers" as const,
-      color: "text-blue-500",
-      bgColor: "bg-blue-50",
+      color: "text-[#2C9AEF]",
+      bgColor: "bg-[#71D3D8]/10",
       subItems: [
         {
           name: "基本情報登録",
@@ -90,68 +90,57 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       href: "/survey",
       icon: "clipboard-list",
       permission: "canAnswerSurvey" as const,
-      color: "text-blue-500",
-      bgColor: "bg-blue-50",
+      color: "text-[#2C9AEF]",
+      bgColor: "bg-[#71D3D8]/10",
     },
   ];
 
-  // Debug: Current user info
-  console.log("Navigation - Current user:", {
-    idType: user?.idType,
-    role: user?.role,
-    permissions: user?.permissions,
-  });
+  // Filter navigation items based on permissions and user role
+  const visibleItems = navigationItems
+    .filter((item) => {
+      const hasRequiredPermission = hasPermission(item.permission);
+      if (!hasRequiredPermission) return false;
 
-  // IDタイプとパーミッションに基づいてナビゲーション項目をフィルタリング
-  const visibleItems = navigationItems.filter((item) => {
-    // パーミッションチェック
-    const hasRequiredPermission = hasPermission(item.permission);
-
-    // 回答画面は人事IDと従業員IDの両方がアクセス可能だが、マスタ権限は除外
-    if (item.href === "/survey") {
-      const canAccess =
-        hasRequiredPermission &&
-        (user?.idType === "hr" || user?.idType === "employee") &&
-        user?.role !== "master"; // マスタ権限は回答画面にアクセス不可
-      console.log(
-        `Navigation - Survey item: hasPermission=${hasRequiredPermission}, idType=${user?.idType}, role=${user?.role}, canAccess=${canAccess}`
-      );
-      return canAccess;
-    }
-
-    // 従業員IDは回答画面以外にはアクセス不可
-    if (user?.idType === "employee") {
-      return false;
-    }
-
-    // IDタイプチェック
-    let hasRequiredIDType = true;
-    if (item.requiresIDType) {
-      if (item.requiresIDType === "master") {
-        hasRequiredIDType = user?.role === "master";
-      } else {
-        hasRequiredIDType = user?.idType === item.requiresIDType;
+      // Survey screen accessible by HR and Employee, but not master
+      if (item.href === "/survey") {
+        return (
+          (user?.idType === "hr" || user?.idType === "employee") &&
+          user?.role !== "master"
+        );
       }
-    }
 
-    // 特別なケース: 人事IDでは基本情報登録画面にアクセスできない
-    if (
-      user?.idType === "hr" &&
-      user?.role !== "master" &&
-      item.name === "顧客情報"
-    ) {
-      // 顧客情報メニューから基本情報登録を除外したサブアイテムのみ表示
-      const filteredItem = {
-        ...item,
-        subItems: item.subItems?.filter(
-          (subItem) => subItem.name !== "基本情報登録"
-        ),
-      };
-      return filteredItem.subItems && filteredItem.subItems.length > 0;
-    }
+      // Employees can only access survey screen
+      if (user?.idType === "employee") {
+        return false;
+      }
 
-    return hasRequiredPermission && hasRequiredIDType;
-  });
+      // Check for requiresIDType
+      if (item.requiresIDType) {
+        if (item.requiresIDType === "master") {
+          return user?.role === "master";
+        }
+        if (user?.idType !== item.requiresIDType) {
+          return false;
+        }
+      }
+
+      return true;
+    })
+    .map((item) => {
+      if (
+        item.name === "顧客情報" &&
+        item.subItems &&
+        user?.idType === "hr" &&
+        user?.role !== "master"
+      ) {
+        const filteredSubItems = item.subItems.filter(
+          (subItem) => subItem.href !== "/customers"
+        );
+        return { ...item, subItems: filteredSubItems };
+      }
+      return item;
+    })
+    .filter((item) => !item.subItems || item.subItems.length > 0);
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems((prev) =>
@@ -165,17 +154,15 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
 
   const isActiveItem = (item: NavigationItem) => {
     if (item.subItems) {
-      return item.subItems.some(
-        (subItem) => location.pathname === subItem.href
+      return item.subItems.some((subItem) =>
+        location.pathname.startsWith(subItem.href)
       );
     }
-    return location.pathname === item.href;
+    return location.pathname.startsWith(item.href);
   };
 
   const getIcon = (iconName: string, isActive: boolean = false) => {
-    const iconClass = `w-5 h-5 ${
-      isActive ? `text-[${THEME_COLORS.accent}]` : "text-gray-500"
-    } group-hover:text-gray-900`;
+    const iconClass = `w-6 h-6 ${isActive ? "text-current" : "text-gray-600"}`;
 
     switch (iconName) {
       case "home":
@@ -226,7 +213,7 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
             />
           </svg>
         );
-      case "building":
+      case "users":
         return (
           <svg
             className={iconClass}
@@ -238,7 +225,7 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
             />
           </svg>
         );
@@ -265,105 +252,117 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
 
   return (
     <>
-      {/* Overlay for mobile navigation */}
+      {/* Mobile Navigation Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-20 z-30 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onClose}
-          aria-hidden="true"
         />
       )}
 
-      {/* Navigation sidebar */}
+      {/* Navigation Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen pt-20 pb-4 bg-white border-r w-64 lg:translate-x-0 transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-16 bottom-0 left-0 w-64 bg-white border-r transform transition-transform duration-300 ease-in-out z-40 overflow-y-auto ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
         style={{ borderColor: THEME_COLORS.border }}
       >
-        <div className="h-full px-4 overflow-y-auto">
-          <ul className="space-y-2">
+        <nav className="px-4 py-5">
+          <div className="space-y-1">
             {visibleItems.map((item) => {
               const isActive = isActiveItem(item);
+              const hasSubItems = item.subItems && item.subItems.length > 0;
+              const isItemExpanded = isExpanded(item.name);
+
               return (
-                <li key={item.name}>
-                  {item.subItems ? (
-                    <div>
-                      <button
-                        onClick={() => toggleExpanded(item.name)}
-                        className={`flex items-center w-full p-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 group transition-colors duration-200 ${
-                          isActive ? "bg-gray-100 text-gray-900" : ""
-                        }`}
-                        aria-expanded={isExpanded(item.name)}
-                      >
-                        <span className="mr-3">
+                <div key={item.name} className="mb-2">
+                  {hasSubItems ? (
+                    <button
+                      onClick={() => toggleExpanded(item.name)}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
+                        isActive
+                          ? `${item.color} ${item.bgColor} font-medium`
+                          : "text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <span
+                          className={`mr-3 ${
+                            isActive ? item.color : "text-gray-500"
+                          }`}
+                        >
                           {getIcon(item.icon, isActive)}
                         </span>
-                        <span className="flex-1 text-left">{item.name}</span>
-                        <svg
-                          className={`w-4 h-4 transform transition-transform duration-200 ${
-                            isExpanded(item.name) ? "rotate-180" : ""
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </button>
-                      {isExpanded(item.name) && (
-                        <ul className="pl-8 mt-2 space-y-2">
-                          {(user?.idType === "hr" &&
-                          user?.role !== "master" &&
-                          item.name === "顧客情報"
-                            ? item.subItems?.filter(
-                                (subItem) => subItem.name !== "基本情報登録"
-                              )
-                            : item.subItems
-                          )?.map((subItem) => (
-                            <li key={subItem.name}>
-                              <NavLink
-                                to={subItem.href}
-                                onClick={onClose}
-                                className={({ isActive }) =>
-                                  `flex items-center p-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 w-full transition-colors duration-200 ${
-                                    isActive ? "bg-gray-100 text-gray-900" : ""
-                                  }`
-                                }
-                              >
-                                {subItem.name}
-                              </NavLink>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
+                        <span className="text-sm font-medium">{item.name}</span>
+                      </div>
+                      <svg
+                        className={`w-4 h-4 transition-transform ${
+                          isItemExpanded ? "transform rotate-180" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
                   ) : (
                     <NavLink
                       to={item.href}
-                      onClick={onClose}
-                      className={({ isActive }) =>
-                        `flex items-center p-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 group w-full transition-colors duration-200 ${
-                          isActive ? "bg-gray-100 text-gray-900" : ""
+                      className={({ isActive: navIsActive }) =>
+                        `flex items-center px-4 py-3 rounded-lg transition-colors ${
+                          navIsActive
+                            ? `${item.color} ${item.bgColor} font-medium`
+                            : "text-gray-600 hover:bg-gray-100"
                         }`
                       }
+                      onClick={onClose}
                     >
-                      <span className="mr-3">
+                      <span
+                        className={`mr-3 ${
+                          isActive ? item.color : "text-gray-500"
+                        }`}
+                      >
                         {getIcon(item.icon, isActive)}
                       </span>
-                      <span>{item.name}</span>
+                      <span className="text-sm font-medium">{item.name}</span>
                     </NavLink>
                   )}
-                </li>
+
+                  {/* Sub Items */}
+                  {hasSubItems && isItemExpanded && (
+                    <div
+                      className="ml-6 mt-1 space-y-1 border-l-2 pl-3"
+                      style={{ borderColor: THEME_COLORS.border }}
+                    >
+                      {item.subItems?.map((subItem) => (
+                        <NavLink
+                          key={subItem.href}
+                          to={subItem.href}
+                          className={({ isActive: subIsActive }) =>
+                            `flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
+                              subIsActive
+                                ? `${item.color} ${item.bgColor} font-medium`
+                                : "text-gray-600 hover:bg-gray-100"
+                            }`
+                          }
+                          onClick={onClose}
+                        >
+                          <span className="text-sm">{subItem.name}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
               );
             })}
-          </ul>
-        </div>
+          </div>
+        </nav>
       </aside>
     </>
   );

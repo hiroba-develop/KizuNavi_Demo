@@ -279,7 +279,7 @@ const CustomerMaster: React.FC = () => {
           基本情報登録
         </h1>
         <div className="flex items-center space-x-4">
-          <CustomerSelector />
+          {!isNewMode && <CustomerSelector />}
           {isMaster && !isNewMode && (
             <button
               onClick={handleNewCreate}

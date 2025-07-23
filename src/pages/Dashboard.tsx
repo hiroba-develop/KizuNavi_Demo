@@ -277,31 +277,52 @@ const Dashboard: React.FC = () => {
 
   const CircularProgress = ({
     percentage,
-    size = 140,
     strokeWidth = 24,
     showLabel = true,
+    label,
+    useGradient = false,
   }: {
     percentage: number;
-    size?: number;
     strokeWidth?: number;
     showLabel?: boolean;
+    label?: React.ReactNode;
+    useGradient?: boolean;
   }) => {
-    const radius = (size - strokeWidth) / 2;
+    const viewBoxSize = 200;
+    const radius = (viewBoxSize - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (percentage / 100) * circumference;
 
-    // エンゲージメント向上を促す色（統一されたテーマカラー）
     const getColor = () => {
-      return THEME_COLORS.accent; // 統一されたアクセントカラー
+      return THEME_COLORS.accent;
     };
 
     return (
-      <div className="relative inline-flex items-center justify-center">
-        <svg width={size} height={size} className="transform -rotate-90">
+      <div className="relative w-full h-full">
+        <svg
+          width="100%"
+          height="100%"
+          viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+          className="transform -rotate-90"
+        >
+          {useGradient && (
+            <defs>
+              <linearGradient
+                id="progressGradient"
+                x1="0%"
+                y1="0%"
+                x2="0%"
+                y2="100%"
+              >
+                <stop offset="0%" stopColor="#2C9AEF" />
+                <stop offset="100%" stopColor="#A6FFC6" />
+              </linearGradient>
+            </defs>
+          )}
           {/* Background circle */}
           <circle
-            cx={size / 2}
-            cy={size / 2}
+            cx={viewBoxSize / 2}
+            cy={viewBoxSize / 2}
             r={radius}
             stroke="#E5E7EB"
             strokeWidth={strokeWidth}
@@ -309,10 +330,10 @@ const Dashboard: React.FC = () => {
           />
           {/* Progress circle */}
           <circle
-            cx={size / 2}
-            cy={size / 2}
+            cx={viewBoxSize / 2}
+            cy={viewBoxSize / 2}
             r={radius}
-            stroke={getColor()}
+            stroke={useGradient ? "url(#progressGradient)" : getColor()}
             strokeWidth={strokeWidth}
             fill="none"
             strokeLinecap="round"
@@ -323,9 +344,11 @@ const Dashboard: React.FC = () => {
         </svg>
         {showLabel && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-lg font-bold text-gray-800">
-              {percentage.toFixed(1)}%
-            </span>
+            {label || (
+              <span className="text-sm sm:text-lg font-bold text-gray-800">
+                {`${percentage.toFixed(1)}%`}
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -333,464 +356,460 @@ const Dashboard: React.FC = () => {
   };
 
   const BarChart = ({ data, title }: { data: any[]; title: string }) => {
-    // SVGサイズを大きく調整
-    const width = isMobile ? 450 : window.innerWidth >= 1536 ? 700 : 600;
-    const height = isMobile ? 280 : window.innerWidth >= 1536 ? 380 : 340;
-    const padding = isMobile ? 40 : window.innerWidth >= 1536 ? 80 : 60;
     const maxValue = 6;
-    const chartHeight = height - 2 * padding;
 
     return (
       <div className="space-y-4 sm:space-y-6">
         <h4 className="text-base sm:text-lg font-medium text-gray-700">
           {title}
         </h4>
-        <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-2xl min-w-[320px] sm:min-w-[450px]">
-            <svg
-              width="100%"
-              height={height}
-              viewBox={`0 0 ${width} ${height}`}
-              preserveAspectRatio="xMidYMid meet"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-auto"
-            >
-              {/* Y-axis labels */}
-              {[0, 1, 2, 3, 4, 5, 6].map((level) => {
-                const y = height - padding - (level / maxValue) * chartHeight;
-                return (
-                  <g key={level}>
-                    <line
-                      x1={padding}
-                      y1={y}
-                      x2={width - padding}
-                      y2={y}
-                      stroke={THEME_COLORS.border}
-                      strokeWidth="0.5"
-                    />
-                    <text
-                      x={padding - 25}
-                      y={y + 4}
-                      textAnchor="end"
-                      className="text-sm fill-gray-500"
-                    >
-                      {level}
-                    </text>
-                  </g>
-                );
-              })}
+        <div className="w-full h-96 sm:h-[450px] md:h-[500px]">
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 700 400"
+            preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {(() => {
+              const width = 700;
+              const height = 400;
+              const padding = { top: 20, right: 20, bottom: 80, left: 50 };
+              const chartWidth = width - padding.left - padding.right;
+              const chartHeight = height - padding.top - padding.bottom;
 
-              {/* Bars */}
-              {data.map((item, index) => {
-                const barWidth =
-                  title === "部門別キズナ度"
-                    ? (width - padding - 20) / data.length - 20
-                    : (width - padding - 20) / data.length - 8;
-                const x =
-                  title === "部門別キズナ度"
-                    ? padding +
-                      (index * (width - padding - 20)) / data.length +
-                      10
-                    : padding +
-                      (index * (width - padding - 20)) / data.length +
-                      4;
-                const barHeight = (item.score / maxValue) * chartHeight;
-                const y = chartHeight - barHeight + padding;
+              return (
+                <>
+                  {/* Y-axis labels */}
+                  {[0, 1, 2, 3, 4, 5, 6].map((level) => {
+                    const y =
+                      padding.top +
+                      chartHeight -
+                      (level / maxValue) * chartHeight;
+                    return (
+                      <g key={level}>
+                        <line
+                          x1={padding.left}
+                          y1={y}
+                          x2={width - padding.right}
+                          y2={y}
+                          stroke={THEME_COLORS.border}
+                          strokeWidth="0.5"
+                        />
+                        <text
+                          x={padding.left - 15}
+                          y={y + 5}
+                          textAnchor="end"
+                          className="text-lg fill-gray-500"
+                        >
+                          {level}
+                        </text>
+                      </g>
+                    );
+                  })}
 
-                return (
-                  <g key={index}>
-                    <rect
-                      x={x}
-                      y={y}
-                      width={barWidth}
-                      height={barHeight}
-                      fill={
-                        title === "部門別キズナ度"
-                          ? "#2C9AEF"
-                          : THEME_COLORS.charts.bar
-                      }
-                      rx="2"
-                      className="hover:opacity-80 cursor-pointer"
-                    >
-                      <title>{`${
-                        item.name || item.category || item.age || item.tenure
-                      }: ${item.score.toFixed(1)}`}</title>
-                    </rect>
-                    {/* Value label on top of bar */}
-                    <text
-                      x={x + barWidth / 2}
-                      y={y - 5}
-                      textAnchor="middle"
-                      className="text-xs font-medium fill-gray-700"
-                    >
-                      {item.score.toFixed(1)}
-                    </text>
-                    {/* X軸ラベル - 改行対応 */}
-                    <text
-                      x={x + barWidth / 2}
-                      y={height - 25}
-                      textAnchor="middle"
-                      className="text-sm fill-gray-600"
-                      style={{ fontSize: "12px" }}
-                    >
-                      {/* 文字列を適切な長さで改行 */}
-                      {(() => {
-                        const label =
-                          item.name || item.category || item.age || item.tenure;
-                        const maxLength = title === "部門別キズナ度" ? 4 : 6;
+                  {/* Bars and X-axis labels */}
+                  {data.map((item, index) => {
+                    const barWidth = (chartWidth / data.length) * 0.6;
+                    const x =
+                      padding.left + (chartWidth / data.length) * (index + 0.2);
+                    const barHeight = (item.score / maxValue) * chartHeight;
+                    const y = padding.top + chartHeight - barHeight;
+                    const label =
+                      item.name || item.category || item.age || item.tenure;
 
-                        if (label.length <= maxLength) {
-                          return <tspan>{label}</tspan>;
-                        }
-
-                        // 改行処理
-                        const lines = [];
-                        let currentLine = "";
-                        for (let i = 0; i < label.length; i++) {
-                          currentLine += label[i];
-                          if (
-                            currentLine.length >= maxLength ||
-                            i === label.length - 1
-                          ) {
-                            lines.push(currentLine);
-                            currentLine = "";
+                    return (
+                      <g key={index}>
+                        <rect
+                          x={x}
+                          y={y}
+                          width={barWidth}
+                          height={barHeight}
+                          fill={
+                            title === "部門別キズナ度"
+                              ? "#2C9AEF"
+                              : THEME_COLORS.charts.bar
                           }
-                        }
-
-                        return lines.map((line, index) => (
-                          <tspan
-                            key={index}
-                            x={x + barWidth / 2}
-                            dy={index === 0 ? 0 : 14}
+                          rx="2"
+                          className="hover:opacity-80 cursor-pointer"
+                        >
+                          {/* <title>{`${label}: ${item.score.toFixed(1)}`}</title> */}
+                        </rect>
+                        <text
+                          x={x + barWidth / 2}
+                          y={y - 5}
+                          textAnchor="middle"
+                          className="text-base font-medium fill-gray-700"
+                        >
+                          {item.score.toFixed(1)}
+                        </text>
+                        <foreignObject
+                          x={x - barWidth * 0.2}
+                          y={padding.top + chartHeight + 5}
+                          width={barWidth * 1.4}
+                          height={padding.bottom - 5}
+                        >
+                          <div
+                            className="w-full h-full flex items-center justify-center text-center text-sm text-gray-600"
+                            style={{ lineHeight: 1.2, fontSize: "14px" }}
                           >
-                            {line}
-                          </tspan>
-                        ));
-                      })()}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
+                            {label}
+                          </div>
+                        </foreignObject>
+                      </g>
+                    );
+                  })}
+                </>
+              );
+            })()}
+          </svg>
         </div>
       </div>
     );
   };
 
   const RadarChart = ({ data, title }: { data: any[]; title: string }) => {
-    // カテゴリ別レポート画面と同じサイズ設定
-    const size = 450;
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const radius = 140;
     const maxValue = 6;
-
-    const angleStep = (2 * Math.PI) / data.length;
-
-    const points = data.map((item, index) => {
-      const angle = index * angleStep - Math.PI / 2;
-      const value = item.score / maxValue;
-      const x = centerX + Math.cos(angle) * radius * value;
-      const y = centerY + Math.sin(angle) * radius * value;
-      return { x, y, angle, label: item.category, score: item.score };
-    });
-
-    const pathData =
-      points
-        .map(
-          (point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`
-        )
-        .join(" ") + " Z";
 
     return (
       <div className="space-y-4 sm:space-y-6">
         <h4 className="text-base sm:text-lg font-medium text-gray-700">
           {title}
         </h4>
-        <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-md min-w-[450px]">
-            <svg
-              width="100%"
-              height="450"
-              viewBox="0 0 450 450"
-              preserveAspectRatio="xMidYMid meet"
-              className="overflow-visible w-full h-auto"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Background grid */}
-              {[1, 2, 3, 4, 5, 6].map((level) => (
-                <circle
-                  key={level}
-                  cx={centerX}
-                  cy={centerY}
-                  r={(radius * level) / 6}
-                  fill="none"
-                  stroke={THEME_COLORS.border}
-                  strokeWidth="1"
-                />
-              ))}
+        <div className="w-full h-96 sm:h-[450px] md:h-[500px]">
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 500 500"
+            preserveAspectRatio="xMidYMid meet"
+            className="overflow-visible"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {(() => {
+              const size = 500;
+              const centerX = size / 2;
+              const centerY = size / 2;
+              const radius = size * 0.3;
+              const angleStep = (2 * Math.PI) / data.length;
 
-              {/* Axis lines */}
-              {data.map((_, index) => {
+              const points = data.map((item, index) => {
                 const angle = index * angleStep - Math.PI / 2;
-                const x2 = centerX + Math.cos(angle) * radius;
-                const y2 = centerY + Math.sin(angle) * radius;
-                return (
-                  <line
-                    key={index}
-                    x1={centerX}
-                    y1={centerY}
-                    x2={x2}
-                    y2={y2}
-                    stroke={THEME_COLORS.border}
-                    strokeWidth="1"
-                  />
-                );
-              })}
+                const value = item.score / maxValue;
+                const x = centerX + Math.cos(angle) * radius * value;
+                const y = centerY + Math.sin(angle) * radius * value;
+                return {
+                  x,
+                  y,
+                  angle,
+                  label: item.category,
+                  score: item.score,
+                };
+              });
 
-              {/* Data area */}
-              <path
-                d={pathData}
-                fill="#71D3D8"
-                fillOpacity="0.3"
-                stroke="#71D3D8"
-                strokeWidth="2"
-              />
+              const pathData =
+                points
+                  .map(
+                    (point, index) =>
+                      `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`
+                  )
+                  .join(" ") + " Z";
 
-              {/* Data points with values */}
-              {points.map((point, index) => (
-                <g key={index}>
-                  <circle
-                    cx={point.x}
-                    cy={point.y}
-                    r="4"
+              return (
+                <>
+                  {/* Background grid */}
+                  {[1, 2, 3, 4, 5, 6].map((level) => (
+                    <circle
+                      key={level}
+                      cx={centerX}
+                      cy={centerY}
+                      r={(radius * level) / 6}
+                      fill="none"
+                      stroke={THEME_COLORS.border}
+                      strokeWidth="1"
+                    />
+                  ))}
+
+                  {/* Axis lines */}
+                  {data.map((_, index) => {
+                    const angle = index * angleStep - Math.PI / 2;
+                    const x2 = centerX + Math.cos(angle) * radius;
+                    const y2 = centerY + Math.sin(angle) * radius;
+                    return (
+                      <line
+                        key={index}
+                        x1={centerX}
+                        y1={centerY}
+                        x2={x2}
+                        y2={y2}
+                        stroke={THEME_COLORS.border}
+                        strokeWidth="1"
+                      />
+                    );
+                  })}
+
+                  {/* Data area */}
+                  <path
+                    d={pathData}
                     fill="#71D3D8"
-                    className="hover:r-6 cursor-pointer"
-                  >
-                    <title>{`${point.label}: ${point.score.toFixed(1)}`}</title>
-                  </circle>
-                  {/* Value label near the point */}
-                  <text
-                    x={point.x}
-                    y={point.y - 12}
-                    textAnchor="middle"
-                    className="text-xs font-semibold fill-gray-700"
-                    style={{ fontSize: "11px" }}
-                  >
-                    {point.score.toFixed(1)}
-                  </text>
-                </g>
-              ))}
+                    fillOpacity="0.3"
+                    stroke="#71D3D8"
+                    strokeWidth="2"
+                  />
 
-              {/* ラベル - カテゴリ別レポート画面と同じスタイル */}
-              {points.map((point, index) => {
-                const labelRadius = radius + 60;
-                const angle = index * angleStep - Math.PI / 2;
-                const labelX = centerX + Math.cos(angle) * labelRadius;
-                const labelY = centerY + Math.sin(angle) * labelRadius;
+                  {/* Data points with values */}
+                  {points.map((point, index) => (
+                    <g key={index}>
+                      <circle
+                        cx={point.x}
+                        cy={point.y}
+                        r="5"
+                        fill="#71D3D8"
+                        className="hover:r-7 cursor-pointer"
+                      >
+                        {/* <title>
+                          {`${point.label}: ${point.score.toFixed(1)}`}
+                        </title> */}
+                      </circle>
+                      {/* <text
+                        x={point.x}
+                        y={point.y - 12}
+                        textAnchor="middle"
+                        className="text-base font-semibold fill-gray-700"
+                        style={{ fontSize: "16px" }}
+                      >
+                        {point.score.toFixed(1)}
+                      </text> */}
+                    </g>
+                  ))}
 
-                return (
-                  <text
-                    key={index}
-                    x={labelX}
-                    y={labelY}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    className="text-sm font-medium fill-gray-600"
-                    style={{ fontSize: "11px" }}
-                  >
-                    {/* 項目名を改行対応で表示 */}
-                    {(() => {
-                      const label = point.label;
-                      const maxLength = 8;
+                  {/* Labels */}
+                  {points.map((point, index) => {
+                    const labelRadius = radius + 80;
+                    const angle = index * angleStep - Math.PI / 2;
+                    const labelX = centerX + Math.cos(angle) * labelRadius;
+                    const labelY = centerY + Math.sin(angle) * labelRadius;
 
-                      if (label.length <= maxLength) {
-                        return (
-                          <tspan x={labelX} dy="-0.7em">
-                            {label}
-                          </tspan>
-                        );
-                      }
-
-                      // 改行処理
-                      const lines = [];
-                      let currentLine = "";
-                      for (let i = 0; i < label.length; i++) {
-                        currentLine += label[i];
-                        if (
-                          currentLine.length >= maxLength ||
-                          i === label.length - 1
-                        ) {
-                          lines.push(currentLine);
-                          currentLine = "";
-                        }
-                      }
-
-                      return lines.map((line, lineIndex) => (
-                        <tspan
-                          key={lineIndex}
-                          x={labelX}
-                          dy={lineIndex === 0 ? "-0.7em" : "1.2em"}
-                        >
-                          {line}
-                        </tspan>
-                      ));
-                    })()}
-                  </text>
-                );
-              })}
-            </svg>
-          </div>
+                    return (
+                      <foreignObject
+                        key={index}
+                        x={labelX - 60}
+                        y={labelY - 40}
+                        width="120"
+                        height="80"
+                      >
+                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                          <div
+                            className="text-sm font-medium text-gray-600"
+                            style={{ fontSize: "15px", lineHeight: 1.2 }}
+                          >
+                            {point.label}
+                          </div>
+                          <div
+                            className="text-base font-semibold text-gray-800 mt-1"
+                            style={{ fontSize: "16px" }}
+                          >
+                            {point.score.toFixed(1)}
+                          </div>
+                        </div>
+                      </foreignObject>
+                    );
+                  })}
+                </>
+              );
+            })()}
+          </svg>
         </div>
       </div>
     );
   };
 
   const LineChart = ({ data, title }: { data: any[]; title: string }) => {
-    // 線グラフのサイズを大きく調整
-    const width = isMobile ? 450 : window.innerWidth >= 1536 ? 700 : 600;
-    const height = isMobile ? 320 : window.innerWidth >= 1536 ? 420 : 380;
-    const padding = isMobile ? 40 : window.innerWidth >= 1536 ? 80 : 60;
     const maxValue = 6;
-
-    const points = data.map((item, index) => {
-      const x = padding + (index * (width - 2 * padding)) / (data.length - 1);
-      const y =
-        height - padding - (item.score / maxValue) * (height - 2 * padding);
-      return { x, y, label: item.age || item.tenure, score: item.score };
-    });
-
-    const pathData = points
-      .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-      .join(" ");
 
     return (
       <div className="space-y-4 sm:space-y-6">
         <h4 className="text-base sm:text-lg font-medium text-gray-700">
           {title}
         </h4>
-        <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-2xl min-w-[320px] sm:min-w-[450px]">
-            <svg
-              width="100%"
-              height={height}
-              viewBox={`0 0 ${width} ${height}`}
-              preserveAspectRatio="xMidYMid meet"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-auto"
-            >
-              {/* Y-axis labels */}
-              {[0, 1, 2, 3, 4, 5, 6].map((level) => {
+        <div className="w-full h-96 sm:h-[450px] md:h-[500px]">
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 700 400"
+            preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {(() => {
+              const width = 700;
+              const height = 400;
+              const padding = { top: 20, right: 40, bottom: 80, left: 50 };
+              const chartWidth = width - padding.left - padding.right;
+              const chartHeight = height - padding.top - padding.bottom;
+
+              const points = data.map((item, index) => {
+                const x =
+                  padding.left + (index * chartWidth) / (data.length - 1);
                 const y =
-                  height -
-                  padding -
-                  (level / maxValue) * (height - 2 * padding);
-                return (
-                  <g key={level}>
-                    <line
-                      x1={padding}
-                      y1={y}
-                      x2={width - padding}
-                      y2={y}
-                      stroke={THEME_COLORS.border}
-                      strokeWidth="0.5"
-                    />
-                    <text
-                      x={padding - 25}
-                      y={y + 4}
-                      textAnchor="end"
-                      className="text-sm fill-gray-500"
+                  padding.top +
+                  chartHeight -
+                  (item.score / maxValue) * chartHeight;
+                return {
+                  x,
+                  y,
+                  label: item.age || item.tenure,
+                  score: item.score,
+                };
+              });
+
+              const pathData = points
+                .map(
+                  (point, index) =>
+                    `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`
+                )
+                .join(" ");
+
+              return (
+                <>
+                  {/* Y-axis labels */}
+                  {[0, 1, 2, 3, 4, 5, 6].map((level) => {
+                    const y =
+                      padding.top +
+                      chartHeight -
+                      (level / maxValue) * chartHeight;
+                    return (
+                      <g key={level}>
+                        <line
+                          x1={padding.left}
+                          y1={y}
+                          x2={width - padding.right}
+                          y2={y}
+                          stroke={THEME_COLORS.border}
+                          strokeWidth="0.5"
+                        />
+                        <text
+                          x={padding.left - 15}
+                          y={y + 5}
+                          textAnchor="end"
+                          className="text-lg fill-gray-500"
+                        >
+                          {level}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* X-axis labels */}
+                  {points.map((point, index) => (
+                    <foreignObject
+                      key={index}
+                      x={point.x - chartWidth / (data.length - 1) / 2}
+                      y={padding.top + chartHeight + 5}
+                      width={chartWidth / (data.length - 1)}
+                      height={padding.bottom - 5}
                     >
-                      {level}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {/* X軸ラベル - 改行対応 */}
-              {points.map((point, index) => (
-                <text
-                  key={index}
-                  x={point.x}
-                  y={height - 25}
-                  textAnchor="middle"
-                  className="text-sm fill-gray-600"
-                  style={{ fontSize: "12px" }}
-                >
-                  {/* 文字列を適切な長さで改行 */}
-                  {(() => {
-                    const label = point.label;
-                    const maxLength = 6;
-
-                    if (label.length <= maxLength) {
-                      return <tspan>{label}</tspan>;
-                    }
-
-                    // 改行処理
-                    const lines = [];
-                    let currentLine = "";
-                    for (let i = 0; i < label.length; i++) {
-                      currentLine += label[i];
-                      if (
-                        currentLine.length >= maxLength ||
-                        i === label.length - 1
-                      ) {
-                        lines.push(currentLine);
-                        currentLine = "";
-                      }
-                    }
-
-                    return lines.map((line, lineIndex) => (
-                      <tspan
-                        key={lineIndex}
-                        x={point.x}
-                        dy={lineIndex === 0 ? 0 : 14}
+                      <div
+                        className="w-full h-full flex items-center justify-center text-center text-sm text-gray-600"
+                        style={{ lineHeight: 1.2, fontSize: "14px" }}
                       >
-                        {line}
-                      </tspan>
-                    ));
-                  })()}
-                </text>
-              ))}
+                        {point.label}
+                      </div>
+                    </foreignObject>
+                  ))}
 
-              {/* Line */}
-              <path
-                d={pathData}
-                fill="none"
-                stroke={THEME_COLORS.charts.line}
-                strokeWidth="3"
-              />
+                  {/* Line */}
+                  <path
+                    d={pathData}
+                    fill="none"
+                    stroke={THEME_COLORS.charts.line}
+                    strokeWidth="3"
+                  />
 
-              {/* Points with values */}
-              {points.map((point, index) => (
-                <g key={index}>
-                  <circle
-                    cx={point.x}
-                    cy={point.y}
-                    r="4"
-                    fill={THEME_COLORS.charts.line}
-                    className="hover:r-6 cursor-pointer"
-                  >
-                    <title>{`${point.label}: ${point.score.toFixed(1)}`}</title>
-                  </circle>
-                  {/* Value label */}
-                  <text
-                    x={point.x}
-                    y={point.y - 12}
-                    textAnchor="middle"
-                    className="text-xs font-medium fill-gray-700"
-                  >
-                    {point.score.toFixed(1)}
-                  </text>
-                </g>
-              ))}
-            </svg>
-          </div>
+                  {/* Points with values */}
+                  {points.map((point, index) => (
+                    <g key={index}>
+                      <circle
+                        cx={point.x}
+                        cy={point.y}
+                        r="5"
+                        fill={THEME_COLORS.charts.line}
+                        className="hover:r-7 cursor-pointer"
+                      >
+                        {/* <title>
+                          {`${point.label}: ${point.score.toFixed(1)}`}
+                        </title> */}
+                      </circle>
+                      <text
+                        x={point.x}
+                        y={point.y - 15}
+                        textAnchor="middle"
+                        className="text-base font-medium fill-gray-700"
+                      >
+                        {point.score.toFixed(1)}
+                      </text>
+                    </g>
+                  ))}
+                </>
+              );
+            })()}
+          </svg>
         </div>
       </div>
     );
   };
+
+  const ScoreIndicator = ({ score }: { score: number }) => {
+    let status: string;
+    let color: string;
+    let icon: React.ReactNode;
+
+    if (score >= 4.5) {
+      status = "良い";
+      color = THEME_COLORS.status.success;
+      icon = (
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 4.5l6 6h-12l6-6z" />
+        </svg>
+      );
+    } else if (score >= 3.0) {
+      status = "普通";
+      color = THEME_COLORS.status.warning;
+      icon = (
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <rect x="4" y="9" width="12" height="2" />
+        </svg>
+      );
+    } else {
+      status = "改善が必要";
+      color = THEME_COLORS.status.error;
+      icon = (
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 15.5l6-6h-12l6 6z" />
+        </svg>
+      );
+    }
+
+    return (
+      <div
+        className="text-xs sm:text-sm font-bold px-3 py-1 rounded-full inline-flex items-center space-x-1"
+        style={{ backgroundColor: `${color}20`, color }}
+      >
+        {icon}
+        <span>{status}</span>
+      </div>
+    );
+  };
+
+  const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({
+    children,
+    className = "",
+  }) => (
+    <div
+      className={`bg-white rounded-lg shadow-sm p-4 sm:p-6 ${className}`}
+      style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
+    >
+      {children}
+    </div>
+  );
 
   // Show loading state
   if (isLoading) {
@@ -852,147 +871,139 @@ const Dashboard: React.FC = () => {
         <CustomerSelector showPeriod={true} />
       </div>
 
-      {/* Top Row: Metrics and Circular Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-        {/* Left: Main Metrics and Kizuna Score */}
-        <div
-          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
-          style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
-        >
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 h-full">
-            <div className="space-y-3 sm:space-y-4">
-              <div className="text-center">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                  キズナ度
-                </h3>
-                <div
-                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
-                  style={{ color: THEME_COLORS.accent }}
-                >
-                  {metrics.kizunaScore}
-                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
-                    /6
-                  </span>
+      {/* Top Section: Main Metrics */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+        {/* Left: Main Kizuna Score */}
+        <Card className="lg:col-span-2 flex flex-col items-center justify-center">
+          <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2 sm:mb-4 text-center">
+            キズナ度
+          </h3>
+          <div className="w-44 h-44 sm:w-72 sm:h-72">
+            <CircularProgress
+              percentage={(metrics.kizunaScore / 6) * 100}
+              label={
+                <div className="text-center">
+                  <div
+                    className="text-4xl sm:text-5xl font-bold"
+                    style={{ color: THEME_COLORS.accent }}
+                  >
+                    {metrics.kizunaScore.toFixed(1)}
+                  </div>
+                  <div className="text-lg text-gray-500">/6</div>
                 </div>
-              </div>
-
-              <div className="text-center">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                  エンゲージメント
-                </h3>
-                <div
-                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
-                  style={{ color: THEME_COLORS.main }}
-                >
-                  {metrics.engagementScore}
-                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
-                    /6
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3 sm:space-y-4">
-              <div className="text-center">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                  満足度
-                </h3>
-                <div
-                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
-                  style={{ color: THEME_COLORS.main }}
-                >
-                  {metrics.satisfactionScore}
-                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
-                    /6
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                  人的資本
-                </h3>
-                <div
-                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
-                  style={{ color: THEME_COLORS.accent }}
-                >
-                  {metrics.humanCapitalScore}
-                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
-                    /6
-                  </span>
-                </div>
-              </div>
-            </div>
+              }
+              strokeWidth={36}
+              useGradient={true}
+            />
           </div>
-        </div>
+        </Card>
 
-        {/* Right: Circular Progress Charts */}
-        <div
-          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
-          style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
-        >
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 h-full">
+        {/* Right: Other metrics */}
+        <div className="lg:col-span-3 flex flex-col gap-4 sm:gap-6">
+          {/* Top part of right column: 3 scores */}
+          <Card className="grid grid-cols-3 gap-3 sm:gap-4 flex-grow">
+            <div className="text-center flex flex-col justify-center">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
+                エンゲージメント
+              </h3>
+              <div className="flex items-baseline justify-center space-x-2 mt-1">
+                <div
+                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
+                  style={{ color: THEME_COLORS.main }}
+                >
+                  {metrics.engagementScore.toFixed(1)}
+                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
+                    /6
+                  </span>
+                </div>
+                <ScoreIndicator score={metrics.engagementScore} />
+              </div>
+            </div>
+            <div className="text-center flex flex-col justify-center">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
+                従業員満足度
+              </h3>
+              <div className="flex items-baseline justify-center space-x-2 mt-1">
+                <div
+                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
+                  style={{ color: THEME_COLORS.main }}
+                >
+                  {metrics.satisfactionScore.toFixed(1)}
+                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
+                    /6
+                  </span>
+                </div>
+                <ScoreIndicator score={metrics.satisfactionScore} />
+              </div>
+            </div>
+            <div className="text-center flex flex-col justify-center">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
+                人的資本
+              </h3>
+              <div className="flex items-baseline justify-center space-x-2 mt-1">
+                <div
+                  className="text-2xl sm:text-3xl xl:text-4xl font-bold"
+                  style={{ color: THEME_COLORS.accent }}
+                >
+                  {metrics.humanCapitalScore.toFixed(1)}
+                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
+                    /6
+                  </span>
+                </div>
+                <ScoreIndicator score={metrics.humanCapitalScore} />
+              </div>
+            </div>
+          </Card>
+
+          {/* Bottom part of right column: 2 circular graphs */}
+          <Card className="grid grid-cols-2 gap-3 sm:gap-6 flex-grow">
             <div className="flex flex-col items-center justify-center">
               <h3 className="text-sm sm:text-base font-medium text-gray-900 mb-2 sm:mb-4 text-center">
                 実施率
               </h3>
-              <CircularProgress
-                percentage={metrics.implementationRate}
-                size={isMobile ? 100 : window.innerWidth >= 1280 ? 160 : 140}
-              />
+              <div className="w-24 h-24 sm:w-40 sm:h-40">
+                <CircularProgress percentage={metrics.implementationRate} />
+              </div>
             </div>
             <div className="flex flex-col items-center justify-center">
               <h3 className="text-sm sm:text-base font-medium text-gray-900 mb-2 sm:mb-4 text-center">
                 ポジティブ割合
               </h3>
-              <CircularProgress
-                percentage={metrics.positiveRate}
-                size={isMobile ? 100 : window.innerWidth >= 1280 ? 160 : 140}
-              />
+              <div className="w-24 h-24 sm:w-40 sm:h-40">
+                <CircularProgress percentage={metrics.positiveRate} />
+              </div>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
 
       {/* Second Row: Department and Generation Charts */}
-      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Department Bar Chart */}
-        <div
-          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
-          style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
-        >
+        <Card>
           <BarChart data={chartData.departmentKizuna} title="部門別キズナ度" />
-        </div>
+        </Card>
 
         {/* Generation Line Chart */}
-        <div
-          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
-          style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
-        >
+        <Card>
           <LineChart data={chartData.generationKizuna} title="世代別キズナ度" />
-        </div>
+        </Card>
       </div>
 
       {/* Third Row: Category and Tenure Charts */}
-      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Category Radar Chart */}
-        <div
-          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
-          style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
-        >
+        <Card>
           <RadarChart
             data={chartData.categoryKizuna}
             title="カテゴリ別キズナ度"
           />
-        </div>
+        </Card>
 
         {/* Tenure Line Chart */}
-        <div
-          className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
-          style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
-        >
+        <Card>
           <LineChart data={chartData.tenureKizuna} title="勤続年数別キズナ度" />
-        </div>
+        </Card>
       </div>
     </div>
   );

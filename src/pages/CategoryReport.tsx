@@ -102,11 +102,9 @@ const CategoryReport: React.FC = () => {
 
               {/* Bars */}
               {data.map((item, index) => {
-                const barWidth = (width - padding - 40) / data.length - 15; // バー幅を調整
+                const barWidth = (width - padding - 40) / data.length - 10; // バー幅を調整
                 const x =
-                  padding +
-                  (index * (width - padding - 40)) / data.length +
-                  7.5; // 位置調整
+                  padding + (index * (width - padding - 40)) / data.length + 5; // 位置調整
                 const barHeight = (item.score / maxValue) * chartHeight;
                 const y = chartHeight - barHeight + padding;
 
@@ -120,9 +118,7 @@ const CategoryReport: React.FC = () => {
                       fill="#2C9AEF"
                       rx="2"
                       className="hover:opacity-80 cursor-pointer"
-                    >
-                      <title>{`${item.name}: ${item.score.toFixed(1)}`}</title>
-                    </rect>
+                    ></rect>
                     {/* Value label on top of bar */}
                     <text
                       x={x + barWidth / 2}
@@ -421,7 +417,7 @@ const CategoryReport: React.FC = () => {
                   className="border-b"
                   style={{ borderColor: THEME_COLORS.border }}
                 >
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">
+                  <th className=" py-3 px-4 font-medium text-gray-900">
                     カテゴリ
                   </th>
                   {currentData.map((item) => (

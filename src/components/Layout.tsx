@@ -115,7 +115,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen bg-gray-50"
       style={{ backgroundColor: THEME_COLORS.background }}
     >
       {/* Fixed Header */}
@@ -125,11 +125,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Navigation isOpen={mobileMenuOpen} onClose={handleMenuClose} />
 
       {/* Main Content */}
-      <main
-        className={`pt-16 ${!isOnlyMember ? "pb-20 xl:pb-6 xl:ml-64" : "pb-6"}`}
-      >
-        <div className="px-4 py-4 sm:px-6 sm:py-6 lg:pl-4 lg:pr-4 lg:py-6 xl:pl-6 xl:pr-6 xl:py-8 max-w-full overflow-x-hidden w-full">
-          <div className="mx-auto w-full max-w-7xl ">
+      <main className="pt-16 lg:ml-64">
+        <div className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 max-w-full overflow-x-hidden w-full">
+          <div className="mx-auto w-full max-w-screen-2xl">
             <div className="w-full">{children || <Outlet />}</div>
           </div>
         </div>
