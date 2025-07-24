@@ -875,7 +875,10 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Left: Main Kizuna Score */}
         <Card className="lg:col-span-2 flex flex-col items-center justify-center">
-          <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2 sm:mb-4 text-center">
+          <h3
+            className="md:text-3xl sm:text-xl font-semibold mb-4 text-center"
+            style={{ color: THEME_COLORS.accent }}
+          >
             キズナ度
           </h3>
           <div className="w-44 h-44 sm:w-72 sm:h-72">
@@ -943,7 +946,7 @@ const Dashboard: React.FC = () => {
               <div className="flex items-baseline justify-center space-x-2 mt-1">
                 <div
                   className="text-2xl sm:text-3xl xl:text-4xl font-bold"
-                  style={{ color: THEME_COLORS.accent }}
+                  style={{ color: THEME_COLORS.main }}
                 >
                   {metrics.humanCapitalScore.toFixed(1)}
                   <span className="text-sm sm:text-lg xl:text-xl text-gray-400">

@@ -27,6 +27,9 @@ const SurveyResponsePage: React.FC = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState("");
   const [showAnnotations, setShowAnnotations] = useState(false);
+  const [visibleAnnotation, setVisibleAnnotation] = useState<string | null>(
+    null
+  );
 
   const ratingLabels = [
     "該当しない",
@@ -39,13 +42,13 @@ const SurveyResponsePage: React.FC = () => {
   ];
 
   // Get annotation number for a question based on all questions with notes
-  const getAnnotationNumber = (questionId: string) => {
-    const questionsWithNotes = activeQuestions
-      .filter((q) => q.note)
-      .sort((a, b) => a.order - b.order);
-    const index = questionsWithNotes.findIndex((q) => q.id === questionId);
-    return index !== -1 ? index + 1 : null;
-  };
+  // const getAnnotationNumber = (questionId: string) => {
+  //   const questionsWithNotes = activeQuestions
+  //     .filter((q) => q.note)
+  //     .sort((a, b) => a.order - b.order);
+  //   const index = questionsWithNotes.findIndex((q) => q.id === questionId);
+  //   return index !== -1 ? index + 1 : null;
+  // };
 
   useEffect(() => {
     const loadSurvey = async () => {
@@ -252,6 +255,14 @@ const SurveyResponsePage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // const toggleAnnotation = (questionId: string) => {
+  //   if (visibleAnnotation === questionId) {
+  //     setVisibleAnnotation(null);
+  //   } else {
+  //     setVisibleAnnotation(questionId);
+  //   }
+  // };
 
   // Show loading state
   if (isLoading && !survey) {
@@ -513,14 +524,6 @@ const SurveyResponsePage: React.FC = () => {
               </svg>
               ログアウト
             </button>
-            {/* Annotations Button - Fixed position, always visible */}
-            <button
-              onClick={() => setShowAnnotations(!showAnnotations)}
-              className="bg-white text-gray-700 text-sm font-medium py-2 px-4 rounded-lg shadow-lg border transition-colors duration-200 hover:bg-gray-50"
-              style={{ borderColor: THEME_COLORS.border }}
-            >
-              注釈 {showAnnotations ? "▼" : "▶"}
-            </button>
           </div>
 
           {/* Progress Bar */}
@@ -594,7 +597,7 @@ const SurveyResponsePage: React.FC = () => {
         >
           <div className="space-y-8">
             {getCurrentPageQuestions().map((question, index) => {
-              const annotationNumber = getAnnotationNumber(question.id);
+              // const annotationNumber = getAnnotationNumber(question.id);
               return (
                 <div
                   key={question.id}
@@ -604,18 +607,76 @@ const SurveyResponsePage: React.FC = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="text-lg font-medium text-gray-900 mb-4 text-left">
-                          {(currentPage - 1) * QUESTIONS_PER_PAGE + index + 1}
-                          {annotationNumber && (
-                            <span
-                              className="ml-1 text-sm"
-                              style={{ color: THEME_COLORS.status.error }}
-                            >
-                              ※{annotationNumber}
-                            </span>
-                          )}
-                          . {question.text}
+                          {(currentPage - 1) * QUESTIONS_PER_PAGE + index + 1}.{" "}
+                          {question.text}
                         </h3>
                       </div>
+                      {/* 注釈ボタンを設問の右端に配置 */}
+                      {question.note && (
+                        <div className="relative ml-4 flex-shrink-0">
+                          <button
+                            onClick={() =>
+                              setVisibleAnnotation(
+                                visibleAnnotation === question.id
+                                  ? null
+                                  : question.id
+                              )
+                            }
+                            className="px-3 py-1 text-sm font-medium rounded-lg border hover:bg-gray-50 transition-colors"
+                            style={{
+                              color: THEME_COLORS.status.error,
+                              borderColor: THEME_COLORS.status.error,
+                              backgroundColor: `${THEME_COLORS.status.error}10`,
+                            }}
+                          >
+                            注釈
+                          </button>
+
+                          {/* 注釈ポップオーバー */}
+                          {visibleAnnotation === question.id &&
+                            question.note && (
+                              <>
+                                {/* オーバーレイ */}
+                                <div
+                                  className="fixed inset-0 z-10"
+                                  onClick={() => setVisibleAnnotation(null)}
+                                />
+                                {/* ポップオーバー */}
+                                <div
+                                  className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border p-4 z-20"
+                                  style={{ borderColor: THEME_COLORS.border }}
+                                >
+                                  <div className="flex justify-between items-center mb-2">
+                                    <h4 className="font-semibold text-gray-900 text-sm">
+                                      注釈
+                                    </h4>
+                                    <button
+                                      onClick={() => setVisibleAnnotation(null)}
+                                      className="text-gray-400 hover:text-gray-600"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M6 18L18 6M6 6l12 12"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                  <div className="text-sm text-gray-600 text-left">
+                                    {question.note}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                        </div>
+                      )}
                     </div>
 
                     {question.type === "rating" ? (

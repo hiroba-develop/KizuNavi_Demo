@@ -49,13 +49,20 @@ const Questions: React.FC = () => {
   const handlePrevious = () => {
     if (currentPage > 1) {
       setCurrentPage((prev) => prev - 1);
+      window.scrollTo(0, 0);
     }
   };
 
   const handleNext = () => {
     if (currentPage < totalPages) {
       setCurrentPage((prev) => prev + 1);
+      window.scrollTo(0, 0);
     }
+  };
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo(0, 0);
   };
 
   const handleEditAnnotation = (questionId: string) => {
@@ -97,24 +104,15 @@ const Questions: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
-            設問項目
-          </h1>
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 xl:space-x-4 mt-3 sm:mt-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          設問項目
+        </h1>
+        <div className="flex items-center space-x-3">
           <CustomerSelector />
-          {/* Annotations Button - Always visible */}
-          <button
-            onClick={() => setShowAnnotations(!showAnnotations)}
-            className="bg-white text-gray-700 text-sm font-medium py-2 px-4 rounded-lg shadow-lg border transition-colors duration-200 hover:bg-gray-50 w-full sm:w-auto"
-            style={{ borderColor: THEME_COLORS.border }}
-          >
-            注釈 {showAnnotations ? "▼" : "▶"}
-          </button>
+
           {/* 配信設定ボタン - 人事IDのみ */}
           {isHR && (
             <button
@@ -130,102 +128,96 @@ const Questions: React.FC = () => {
 
       {/* Annotations Panel */}
       {showAnnotations && (
-        <div
-          className="fixed top-32 right-4 w-80 bg-white rounded-lg shadow-lg border p-4 z-20 max-h-96 overflow-y-auto"
-          style={{ borderColor: THEME_COLORS.border }}
-        >
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold text-gray-900">注釈一覧</h3>
-            <button
-              onClick={() => setShowAnnotations(false)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+        <>
+          {/* Overlay to close annotations when clicking outside */}
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setShowAnnotations(false)}
+          />
+          <div
+            className="fixed top-32 right-4 w-80 bg-white rounded-lg shadow-lg border p-4 z-20 max-h-96 overflow-y-auto transition-all duration-300 ease-in-out"
+            style={{
+              borderColor: THEME_COLORS.border,
+              transform: showAnnotations
+                ? "translateY(0)"
+                : "translateY(-20px)",
+              opacity: showAnnotations ? 1 : 0,
+            }}
+          >
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-semibold text-gray-900">注釈一覧</h3>
+              <button
+                onClick={() => setShowAnnotations(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-          <div className="space-y-3">
-            {questions
-              .filter((q) => q.note)
-              .sort((a, b) => a.order - b.order)
-              .map((question, index) => (
-                <div key={question.id} className="text-sm">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div
-                        className="font-medium text-left"
-                        style={{ color: THEME_COLORS.status.error }}
-                      >
-                        ※{index + 1}
-                      </div>
-                      <div className="text-gray-600 text-left">
-                        {question.note}
-                      </div>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-3">
+              {questions
+                .filter((q) => q.note)
+                .sort((a, b) => a.order - b.order)
+                .map((question, index) => (
+                  <div key={question.id} className="text-sm">
+                    <div
+                      className="font-medium text-left"
+                      style={{ color: THEME_COLORS.status.error }}
+                    >
+                      ※{index + 1}
                     </div>
-                    {/* 人事IDのみ削除ボタンを表示 */}
-                    {isHR && (
-                      <button
-                        onClick={() => handleDeleteAnnotation(question.id)}
-                        className="ml-2 p-1 text-gray-400 hover:text-red-600 transition-colors flex-shrink-0"
-                        title="注釈を削除"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    )}
+                    <div className="text-sm font-medium text-gray-700 mb-1 text-left">
+                      設問 {question.order}
+                    </div>
+                    <div className="text-gray-600 text-left">
+                      {question.note}
+                    </div>
                   </div>
+                ))}
+              {questions.filter((q) => q.note).length === 0 && (
+                <div className="text-sm text-gray-500 text-left">
+                  注釈はありません
                 </div>
-              ))}
-            {questions.filter((q) => q.note).length === 0 && (
-              <div className="text-sm text-gray-500">注釈はありません</div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Questions List */}
       <div
-        className="bg-white rounded-lg shadow-sm border"
-        style={{ borderColor: THEME_COLORS.border }}
+        className="bg-white rounded-lg shadow-sm p-8"
+        style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
       >
-        <div
-          className="px-6 py-4 bg-gray-50 border-b"
-          style={{ borderColor: THEME_COLORS.border }}
-        >
+        <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-900">設問一覧</h3>
         </div>
-        <div className="divide-y" style={{ borderColor: THEME_COLORS.border }}>
+
+        <div className="space-y-6">
           {currentQuestions.map((question) => {
             const annotationNumber = getAnnotationNumber(question.id);
             return (
-              <div key={question.id} className="p-6">
+              <div
+                key={question.id}
+                className="p-6 bg-gray-50 rounded-lg border"
+                style={{ borderColor: THEME_COLORS.border }}
+              >
                 <div className="flex items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                        {question.order}
+                        設問 {question.order}
                         {annotationNumber && (
                           <span
                             className="ml-1 text-xs"
@@ -236,9 +228,23 @@ const Questions: React.FC = () => {
                         )}
                       </span>
                     </div>
-                    <h4 className="text-lg font-medium text-gray-900 mb-2 text-left">
-                      {question.text}
-                    </h4>
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="text-lg font-medium text-gray-900 text-left flex-1">
+                        {question.text}
+                      </h4>
+                      {/* 人事IDのみ注釈追加ボタンを表示 */}
+                      {!question.note &&
+                        isHR &&
+                        editingAnnotation !== question.id && (
+                          <button
+                            onClick={() => handleEditAnnotation(question.id)}
+                            className="ml-4 px-3 py-1 text-xs font-medium text-white rounded transition-colors hover:opacity-90 flex-shrink-0"
+                            style={{ backgroundColor: THEME_COLORS.accent }}
+                          >
+                            + 注釈を追加
+                          </button>
+                        )}
+                    </div>
 
                     {/* Annotation display and edit */}
                     {(question.note || editingAnnotation === question.id) && (
@@ -261,7 +267,7 @@ const Questions: React.FC = () => {
                                   onChange={(e) =>
                                     setAnnotationText(e.target.value)
                                   }
-                                  className="w-full px-3 py-2 border rounded-lg text-sm text-left"
+                                  className="w-full px-3 py-2 border rounded-lg text-sm"
                                   style={{ borderColor: THEME_COLORS.border }}
                                   rows={3}
                                   placeholder="注釈を入力してください..."
@@ -283,6 +289,22 @@ const Questions: React.FC = () => {
                                   >
                                     キャンセル
                                   </button>
+                                  {questions.find(
+                                    (q) => q.id === editingAnnotation
+                                  )?.note &&
+                                    isHR && (
+                                      <button
+                                        onClick={() =>
+                                          editingAnnotation &&
+                                          handleDeleteAnnotation(
+                                            editingAnnotation
+                                          )
+                                        }
+                                        className="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100"
+                                      >
+                                        削除
+                                      </button>
+                                    )}
                                 </div>
                               </div>
                             ) : (
@@ -293,60 +315,27 @@ const Questions: React.FC = () => {
                               )
                             )}
                           </div>
-                          {/* 人事IDのみ編集・削除ボタンを表示 */}
-                          {isHR && editingAnnotation !== question.id && (
-                            <div className="flex space-x-2 ml-2">
-                              <button
-                                onClick={() =>
-                                  handleEditAnnotation(question.id)
-                                }
-                                className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800"
-                              >
-                                {question.note ? "編集" : "注釈を追加"}
-                              </button>
-                              {question.note && (
-                                <button
-                                  onClick={() =>
-                                    handleDeleteAnnotation(question.id)
-                                  }
-                                  className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                                  title="注釈を削除"
-                                >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                    />
-                                  </svg>
-                                </button>
-                              )}
-                            </div>
+                          {editingAnnotation !== question.id && isHR && (
+                            <button
+                              onClick={() => handleEditAnnotation(question.id)}
+                              className="ml-2 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800"
+                            >
+                              {question.note ? "編集" : ""}
+                            </button>
+                          )}
+                          {question.note && isHR && (
+                            <button
+                              onClick={() =>
+                                handleDeleteAnnotation(question.id)
+                              }
+                              className="ml-2 px-2 py-1 text-xs font-medium text-red-600 hover:text-red-800"
+                            >
+                              削除
+                            </button>
                           )}
                         </div>
                       </div>
                     )}
-
-                    {/* 人事IDのみ注釈追加ボタンを表示 */}
-                    {!question.note &&
-                      isHR &&
-                      editingAnnotation !== question.id && (
-                        <div className="mt-3">
-                          <button
-                            onClick={() => handleEditAnnotation(question.id)}
-                            className="px-3 py-1 text-xs font-medium text-white rounded transition-colors hover:opacity-90 flex-shrink-0"
-                            style={{ backgroundColor: THEME_COLORS.accent }}
-                          >
-                            + 注釈を追加
-                          </button>
-                        </div>
-                      )}
                   </div>
                 </div>
               </div>
@@ -356,42 +345,125 @@ const Questions: React.FC = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-center space-x-4">
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           style={{ borderColor: THEME_COLORS.border }}
         >
           前のページ
         </button>
 
         <div className="flex space-x-1">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index + 1}
-              onClick={() => setCurrentPage(index + 1)}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                currentPage === index + 1
-                  ? "text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-              style={{
-                backgroundColor:
-                  currentPage === index + 1
-                    ? THEME_COLORS.accent
-                    : "transparent",
-              }}
-            >
-              {index + 1}
-            </button>
-          ))}
+          {(() => {
+            // ページネーション表示のロジック
+            const pageButtons = [];
+            const showEllipsisBefore = currentPage > 3;
+            const showEllipsisAfter = currentPage < totalPages - 2;
+
+            // 常に最初のページを表示
+            if (totalPages > 0) {
+              pageButtons.push(
+                <button
+                  key={1}
+                  onClick={() => handlePageClick(1)}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    currentPage === 1
+                      ? "text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                  style={{
+                    backgroundColor:
+                      currentPage === 1 ? THEME_COLORS.accent : "transparent",
+                  }}
+                >
+                  1
+                </button>
+              );
+            }
+
+            // 前の省略記号
+            if (showEllipsisBefore) {
+              pageButtons.push(
+                <span
+                  key="ellipsis-before"
+                  className="px-3 py-2 text-sm font-medium"
+                >
+                  ...
+                </span>
+              );
+            }
+
+            // 中間のページ
+            for (
+              let i = Math.max(2, currentPage - 1);
+              i <= Math.min(totalPages - 1, currentPage + 1);
+              i++
+            ) {
+              if (i === 1 || i === totalPages) continue; // 最初と最後のページは別に処理
+              pageButtons.push(
+                <button
+                  key={i}
+                  onClick={() => handlePageClick(i)}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    currentPage === i
+                      ? "text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                  style={{
+                    backgroundColor:
+                      currentPage === i ? THEME_COLORS.accent : "transparent",
+                  }}
+                >
+                  {i}
+                </button>
+              );
+            }
+
+            // 後の省略記号
+            if (showEllipsisAfter) {
+              pageButtons.push(
+                <span
+                  key="ellipsis-after"
+                  className="px-3 py-2 text-sm font-medium"
+                >
+                  ...
+                </span>
+              );
+            }
+
+            // 常に最後のページを表示（ページが1以上ある場合）
+            if (totalPages > 1) {
+              pageButtons.push(
+                <button
+                  key={totalPages}
+                  onClick={() => handlePageClick(totalPages)}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    currentPage === totalPages
+                      ? "text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                  style={{
+                    backgroundColor:
+                      currentPage === totalPages
+                        ? THEME_COLORS.accent
+                        : "transparent",
+                  }}
+                >
+                  {totalPages}
+                </button>
+              );
+            }
+
+            return pageButtons;
+          })()}
         </div>
 
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           style={{ borderColor: THEME_COLORS.border }}
         >
           次のページ
@@ -400,8 +472,11 @@ const Questions: React.FC = () => {
 
       {/* Distribution Settings Modal */}
       {showDistributionModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 border"
+            style={{ borderColor: THEME_COLORS.border }}
+          >
             <div
               className="px-6 py-4 border-b"
               style={{ borderColor: THEME_COLORS.border }}
@@ -419,7 +494,7 @@ const Questions: React.FC = () => {
                   </label>
                   <input
                     type="date"
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     style={{ borderColor: THEME_COLORS.border }}
                     min={new Date().toISOString().split("T")[0]}
                     value={deadline}
@@ -429,7 +504,7 @@ const Questions: React.FC = () => {
               </div>
             </div>
             <div
-              className="px-6 py-4 bg-gray-50 border-t flex justify-center space-x-3"
+              className="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3"
               style={{ borderColor: THEME_COLORS.border }}
             >
               <button
@@ -440,7 +515,7 @@ const Questions: React.FC = () => {
               </button>
               <button
                 onClick={handleDistribute}
-                className="px-4 py-2 text-white rounded-lg transition-colors"
+                className="px-4 py-2 text-white rounded-lg transition-colors hover:opacity-90"
                 style={{ backgroundColor: THEME_COLORS.accent }}
               >
                 配信開始
