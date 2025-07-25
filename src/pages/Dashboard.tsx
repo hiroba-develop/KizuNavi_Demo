@@ -277,7 +277,7 @@ const Dashboard: React.FC = () => {
 
   const CircularProgress = ({
     percentage,
-    strokeWidth = 24,
+    strokeWidth = 27,
     showLabel = true,
     label,
     useGradient = false,

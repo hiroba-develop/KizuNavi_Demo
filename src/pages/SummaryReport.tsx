@@ -270,7 +270,7 @@ const SummaryReport: React.FC = () => {
     data: typeof metricsData;
     title: string;
   }) => {
-    const size = 350;
+    const size = 450; // SVGサイズを拡大
     const centerX = size / 2;
     const centerY = size / 2;
     const radius = 120;
@@ -303,8 +303,8 @@ const SummaryReport: React.FC = () => {
           <div className="w-full max-w-sm">
             <svg
               width="100%"
-              height="350"
-              viewBox="0 0 350 350"
+              height="450"
+              viewBox="0 0 450 450"
               preserveAspectRatio="xMidYMid meet"
               className="overflow-visible w-full h-auto"
             >
@@ -359,9 +359,9 @@ const SummaryReport: React.FC = () => {
                 />
               ))}
 
-              {/* ラベル - 改行対応 */}
+              {/* ラベル - 改行対応 スマホサイズ対応 */}
               {points.map((point, index) => {
-                const labelRadius = radius + 50;
+                const labelRadius = radius + 65; // ラベルの距離を増加
                 const angle = index * angleStep - Math.PI / 2;
                 const labelX = centerX + Math.cos(angle) * labelRadius;
                 const labelY = centerY + Math.sin(angle) * labelRadius;
@@ -374,12 +374,12 @@ const SummaryReport: React.FC = () => {
                     textAnchor="middle"
                     dominantBaseline="middle"
                     className="text-sm font-medium fill-gray-600"
-                    style={{ fontSize: "12px" }}
+                    style={{ fontSize: "10px" }} // フォントサイズを小さく
                   >
                     {/* 項目名を改行対応で表示 */}
                     {(() => {
                       const label = point.label;
-                      const maxLength = 8;
+                      const maxLength = 6; // 1行の最大文字数を短く
 
                       if (label.length <= maxLength) {
                         return (
@@ -391,7 +391,7 @@ const SummaryReport: React.FC = () => {
                               x={labelX}
                               dy="1.4em"
                               className="font-semibold"
-                              style={{ fontSize: "12px" }}
+                              style={{ fontSize: "10px" }}
                             >
                               {point.value.toFixed(1)}%
                             </tspan>
@@ -399,7 +399,7 @@ const SummaryReport: React.FC = () => {
                         );
                       }
 
-                      // 改行処理
+                      // 改行処理 - スマホサイズ対応
                       const lines = [];
                       let currentLine = "";
                       for (let i = 0; i < label.length; i++) {
@@ -419,16 +419,16 @@ const SummaryReport: React.FC = () => {
                             <tspan
                               key={lineIndex}
                               x={labelX}
-                              dy={lineIndex === 0 ? "-0.7em" : "1.2em"}
+                              dy={lineIndex === 0 ? "-0.7em" : "1.1em"} // 行間を調整
                             >
                               {line}
                             </tspan>
                           ))}
                           <tspan
                             x={labelX}
-                            dy="1.4em"
+                            dy="1.3em"
                             className="font-semibold"
-                            style={{ fontSize: "12px" }}
+                            style={{ fontSize: "10px" }}
                           >
                             {point.value.toFixed(1)}%
                           </tspan>
@@ -446,7 +446,7 @@ const SummaryReport: React.FC = () => {
                   x={centerX + 5}
                   y={centerY - (radius * percentage) / 100}
                   className="text-xs fill-gray-400"
-                  style={{ fontSize: "9px" }}
+                  style={{ fontSize: "8px" }} // フォントサイズを小さく
                 >
                   {percentage}%
                 </text>

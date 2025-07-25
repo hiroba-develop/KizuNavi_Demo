@@ -11,6 +11,17 @@ const SurveyResponsePage: React.FC = () => {
   const { user, logout } = useAuth();
   const { questions, getQuestionsForCustomer } = useQuestions();
   // const { selectedCustomerId } = useCustomer();
+  const [isMobile, setIsMobile] = useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // トークンアクセスの場合はデフォルト顧客（"3"）、認証ユーザーの場合は選択された顧客
   // const currentCustomerId = token ? "3" : selectedCustomerId;
@@ -328,10 +339,12 @@ const SurveyResponsePage: React.FC = () => {
           <div className="flex justify-end mb-4">
             <button
               onClick={logout}
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 shadow-sm"
+              className={`flex items-center ${
+                isMobile ? "px-2 py-1 text-xs" : "px-4 py-2 text-sm"
+              } font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 shadow-sm`}
             >
               <svg
-                className="w-4 h-4 mr-2"
+                className={isMobile ? "w-3 h-3 mr-1" : "w-4 h-4 mr-2"}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -394,8 +407,34 @@ const SurveyResponsePage: React.FC = () => {
     >
       <div className="sm:mx-auto sm:w-full sm:max-w-4xl">
         {/* Header with Logout */}
-        <div className="flex justify-between items-start mb-8">
-          <div className="text-center flex-1">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-8">
+          {/* ログアウトボタン - スマホでは上部右寄せ、デスクトップでは右上 */}
+          <div className="flex justify-end sm:order-2 mb-4 sm:mb-0">
+            <button
+              onClick={logout}
+              className={`flex items-center ${
+                isMobile ? "px-2 py-1 text-xs" : "px-4 py-2 text-sm"
+              } font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 shadow-sm`}
+            >
+              <svg
+                className={isMobile ? "w-3 h-3 mr-1" : "w-4 h-4 mr-2"}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              ログアウト
+            </button>
+          </div>
+
+          {/* ロゴとタイトル - 中央配置 */}
+          <div className="text-center flex-1 sm:order-1">
             <div className="flex items-center justify-center mb-4">
               <svg
                 width="120"
@@ -403,7 +442,7 @@ const SurveyResponsePage: React.FC = () => {
                 viewBox="0 0 2077 523"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="mr-2 sm:mr-3 sm:w-[150px] sm:h-[36px] lg:w-[200px] lg:h-[48px]"
+                className="sm:w-[150px] sm:h-[36px] lg:w-[200px] lg:h-[48px]"
               >
                 <path
                   d="M430.746 34.6782C430.281 32.5087 429.739 30.6492 429.119 28.8671L440.121 27.085C440.276 28.5572 440.586 31.1915 440.896 33.0511C441.671 38.1649 449.341 77.3705 450.968 85.2736C451.511 87.5206 452.208 90.3099 452.906 92.8668L441.748 94.8039C441.361 91.937 441.206 89.3027 440.663 86.9782C439.501 80.0049 431.986 40.9542 430.746 34.6782ZM409.593 44.5958C411.995 44.4409 414.32 44.2859 416.799 43.976C423.385 43.2012 450.504 39.0172 457.477 37.6225C459.879 37.2351 462.823 36.5378 464.683 35.9954L466.62 46.223C464.915 46.3004 461.738 46.7653 459.414 47.0753C451.201 48.3924 424.547 52.6539 418.736 53.6612C416.334 54.1261 414.32 54.591 411.685 55.2883L409.593 44.5958ZM409.671 67.2979C411.685 67.2204 415.25 66.833 417.651 66.4456C425.942 65.2834 454.223 60.712 463.133 59.0074C466.155 58.465 469.022 57.7677 471.114 57.2253L473.128 67.4529C471.036 67.6079 467.859 68.1502 464.993 68.6151C455.153 70.0873 427.259 74.6587 419.588 76.1308C416.257 76.7507 413.545 77.2156 411.84 77.6804L409.671 67.2979ZM586.019 25.6129C588.033 28.5572 590.9 33.516 592.14 36.2279L585.941 38.8622C584.314 35.6855 581.99 31.269 579.898 28.0923L586.019 25.6129ZM595.781 22.901C597.796 25.7678 600.663 30.7267 602.057 33.4385L595.859 36.0729C594.232 32.8187 591.675 28.3247 589.66 25.3804L595.781 22.901ZM589.505 39.4046C588.886 40.2569 587.491 42.5813 586.794 44.2084C583.617 51.5692 577.883 62.1067 571.22 69.8548C562.542 79.8499 550.842 89.4576 538.833 95.1913L530.774 86.8233C543.326 82.0969 555.259 72.7216 562.542 64.5861C567.656 58.775 572.382 51.1043 574.164 45.6031C570.91 45.6031 551.152 45.6031 547.82 45.6031C544.644 45.6031 540.382 45.9905 538.678 46.1455V35.0656C540.77 35.3756 545.573 35.6855 547.82 35.6855C551.927 35.6855 571.762 35.6855 575.171 35.6855C578.581 35.6855 581.602 35.2206 583.229 34.6782L589.505 39.4046ZM572.227 63.4238C580.208 69.9323 591.21 81.477 596.246 87.6756L587.413 95.3462C581.68 87.3656 573.234 78.1453 564.944 70.6296L572.227 63.4238ZM685.97 37.7775C685.97 35.2206 685.66 31.1915 684.963 28.7121H697.205C696.817 31.1915 696.585 35.453 696.585 37.855C696.585 42.1939 696.585 48.005 696.585 53.1963C696.585 70.0098 692.246 83.8015 674.503 94.4164L664.817 87.2881C681.166 79.7724 685.97 67.6079 685.97 53.1963C685.97 48.005 685.97 42.1164 685.97 37.7775ZM657.147 45.7581C659.549 46.068 662.725 46.3004 665.825 46.3004C670.241 46.3004 709.292 46.3004 714.018 46.3004C717.582 46.3004 720.914 46.068 722.541 45.8356V56.4505C720.914 56.2956 717.04 56.1406 713.941 56.1406C709.292 56.1406 670.241 56.1406 666.057 56.1406C662.725 56.1406 659.626 56.2956 657.147 56.528V45.7581ZM831.635 27.24C833.572 30.1068 836.284 34.9881 837.756 37.855L831.558 40.5668C829.93 37.3901 827.606 32.8187 825.514 29.7969L831.635 27.24ZM840.778 23.7533C842.792 26.6976 845.659 31.579 847.054 34.2908L840.855 37.0027C839.306 33.7484 836.749 29.2545 834.657 26.3102L840.778 23.7533ZM798.163 30.6492C797.853 32.9736 797.621 36.4603 797.621 38.7073C797.621 43.4336 797.621 71.9468 797.621 77.7579C797.621 81.1671 799.17 82.0194 802.657 82.6393C804.981 83.0267 808.158 83.1041 811.567 83.1041C819.703 83.1041 832.177 82.1744 838.608 80.4698V91.7821C831.248 92.8668 819.548 93.3317 811.025 93.3317C805.989 93.3317 801.262 93.0218 797.931 92.4794C791.267 91.2397 787.316 87.5981 787.316 80.8572C787.316 71.9468 787.316 43.5111 787.316 38.7073C787.316 36.9252 787.083 32.9736 786.773 30.6492H798.163ZM793.049 54.436C803.044 52.2665 816.294 48.0825 824.429 44.7508C827.141 43.5886 829.775 42.3489 832.875 40.5668L836.981 50.3295C834.037 51.5692 830.55 53.0413 827.993 54.0486C818.851 57.5353 803.664 62.1067 793.127 64.5861L793.049 54.436Z"
@@ -501,29 +540,6 @@ const SurveyResponsePage: React.FC = () => {
               )}{" "}
               / {activeQuestions.length}）
             </p>
-          </div>
-
-          <div className="flex flex-col space-y-3">
-            {/* Logout Button */}
-            <button
-              onClick={logout}
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 shadow-sm"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              ログアウト
-            </button>
           </div>
 
           {/* Progress Bar */}
@@ -643,11 +659,30 @@ const SurveyResponsePage: React.FC = () => {
                                 />
                                 {/* ポップオーバー */}
                                 <div
-                                  className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border p-4 z-20"
-                                  style={{ borderColor: THEME_COLORS.border }}
+                                  className="absolute top-full mt-2 bg-white rounded-lg shadow-lg border z-20"
+                                  style={{
+                                    borderColor: THEME_COLORS.border,
+                                    width: isMobile
+                                      ? "180px" // スマホサイズをさらに小さく
+                                      : "320px",
+                                    maxWidth: isMobile ? "180px" : "320px",
+                                    right: isMobile ? "0" : "0", // スマホでも右寄せに変更
+                                    left: isMobile ? "auto" : "auto",
+                                    transform: isMobile
+                                      ? "translateX(0)"
+                                      : "none",
+                                    marginLeft: isMobile ? "0" : "auto",
+                                    marginRight: isMobile ? "0" : "auto",
+                                    padding: isMobile ? "6px" : "16px", // スマホ時のパディングをさらに小さく
+                                  }}
                                 >
                                   <div className="flex justify-between items-center mb-2">
-                                    <h4 className="font-semibold text-gray-900 text-sm">
+                                    <h4
+                                      className="font-semibold text-gray-900"
+                                      style={{
+                                        fontSize: isMobile ? "10px" : "14px",
+                                      }} // スマホ時のフォントサイズをさらに小さく
+                                    >
                                       注釈
                                     </h4>
                                     <button
@@ -655,7 +690,9 @@ const SurveyResponsePage: React.FC = () => {
                                       className="text-gray-400 hover:text-gray-600"
                                     >
                                       <svg
-                                        className="w-4 h-4"
+                                        className={
+                                          isMobile ? "w-3 h-3" : "w-4 h-4"
+                                        } // スマホ時のアイコンサイズを小さく
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -669,7 +706,13 @@ const SurveyResponsePage: React.FC = () => {
                                       </svg>
                                     </button>
                                   </div>
-                                  <div className="text-sm text-gray-600 text-left">
+                                  <div
+                                    className="text-gray-600 text-left"
+                                    style={{
+                                      fontSize: isMobile ? "9px" : "14px",
+                                      lineHeight: isMobile ? "1.3" : "1.5",
+                                    }} // スマホ時のフォントサイズをさらに小さく、行間も調整
+                                  >
                                     {question.note}
                                   </div>
                                 </div>

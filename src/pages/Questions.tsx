@@ -228,17 +228,17 @@ const Questions: React.FC = () => {
                         )}
                       </span>
                     </div>
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="text-lg font-medium text-gray-900 text-left flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
+                      <h4 className="text-lg font-medium text-gray-900 text-left flex-1 mb-3 sm:mb-0">
                         {question.text}
                       </h4>
-                      {/* 人事IDのみ注釈追加ボタンを表示 */}
+                      {/* 人事IDのみ注釈追加ボタンを表示 - スマホ表示では非表示、設問の下に表示 */}
                       {!question.note &&
                         isHR &&
                         editingAnnotation !== question.id && (
                           <button
                             onClick={() => handleEditAnnotation(question.id)}
-                            className="ml-4 px-3 py-1 text-xs font-medium text-white rounded transition-colors hover:opacity-90 flex-shrink-0"
+                            className="hidden sm:flex ml-4 px-3 py-1 text-xs font-medium text-white rounded transition-colors hover:opacity-90 flex-shrink-0"
                             style={{ backgroundColor: THEME_COLORS.accent }}
                           >
                             + 注釈を追加
@@ -246,13 +246,28 @@ const Questions: React.FC = () => {
                         )}
                     </div>
 
+                    {/* スマホサイズ用の注釈追加ボタン - 設問の下に表示 */}
+                    {!question.note &&
+                      isHR &&
+                      editingAnnotation !== question.id && (
+                        <div className="sm:hidden mb-3">
+                          <button
+                            onClick={() => handleEditAnnotation(question.id)}
+                            className="w-full px-3 py-2 text-sm font-medium text-white rounded transition-colors hover:opacity-90"
+                            style={{ backgroundColor: THEME_COLORS.accent }}
+                          >
+                            + 注釈を追加
+                          </button>
+                        </div>
+                      )}
+
                     {/* Annotation display and edit */}
                     {(question.note || editingAnnotation === question.id) && (
                       <div
                         className="mt-3 p-3 bg-gray-50 rounded-lg border"
                         style={{ borderColor: THEME_COLORS.border }}
                       >
-                        <div className="flex items-start justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
                           <div className="flex-1">
                             {question.note &&
                               editingAnnotation !== question.id && (
@@ -273,7 +288,7 @@ const Questions: React.FC = () => {
                                   placeholder="注釈を入力してください..."
                                   autoFocus
                                 />
-                                <div className="flex space-x-2">
+                                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                                   <button
                                     onClick={handleSaveAnnotation}
                                     className="px-3 py-1 text-xs font-medium text-white rounded"
@@ -309,29 +324,35 @@ const Questions: React.FC = () => {
                               </div>
                             ) : (
                               question.note && (
-                                <div className="text-sm text-gray-600 text-left">
+                                <div className="text-sm text-gray-600 text-left mb-3 sm:mb-0">
                                   {question.note}
                                 </div>
                               )
                             )}
                           </div>
+
+                          {/* 編集・削除ボタン - デスクトップでは右側、スマホでは下に表示 */}
                           {editingAnnotation !== question.id && isHR && (
-                            <button
-                              onClick={() => handleEditAnnotation(question.id)}
-                              className="ml-2 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800"
-                            >
-                              {question.note ? "編集" : ""}
-                            </button>
-                          )}
-                          {question.note && isHR && (
-                            <button
-                              onClick={() =>
-                                handleDeleteAnnotation(question.id)
-                              }
-                              className="ml-2 px-2 py-1 text-xs font-medium text-red-600 hover:text-red-800"
-                            >
-                              削除
-                            </button>
+                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 sm:ml-2">
+                              <button
+                                onClick={() =>
+                                  handleEditAnnotation(question.id)
+                                }
+                                className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800"
+                              >
+                                {question.note ? "編集" : ""}
+                              </button>
+                              {question.note && (
+                                <button
+                                  onClick={() =>
+                                    handleDeleteAnnotation(question.id)
+                                  }
+                                  className="px-2 py-1 text-xs font-medium text-red-600 hover:text-red-800"
+                                >
+                                  削除
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>

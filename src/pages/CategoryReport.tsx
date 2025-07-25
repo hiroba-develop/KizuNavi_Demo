@@ -5,6 +5,17 @@ import CustomerSelector from "../components/CustomerSelector";
 
 const CategoryReport: React.FC = () => {
   const { selectedPeriod, selectedCustomerId } = useCustomer();
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // ベースデータ（顧客・期間によって調整される）
   const baseData = [
@@ -63,10 +74,10 @@ const CategoryReport: React.FC = () => {
         style={{ borderColor: THEME_COLORS.border }}
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-6">{title}</h3>
-        <div className="flex justify-center w-full overflow-x-auto">
-          <div className="w-full max-w-4xl min-w-[600px]">
+        <div className="flex justify-start w-full overflow-x-auto">
+          <div className="w-full max-w-4xl min-w-[700px]">
             {" "}
-            {/* コンテナサイズも拡大 */}
+            {/* スマホでも適度なサイズに調整 */}
             <svg
               width="100%"
               height="450"
@@ -134,12 +145,12 @@ const CategoryReport: React.FC = () => {
                       y={height - 40}
                       textAnchor="middle"
                       className="text-sm fill-gray-600"
-                      style={{ fontSize: "12px" }}
+                      style={{ fontSize: isMobile ? "10px" : "12px" }}
                     >
                       {/* 文字列を適切な長さで改行 */}
                       {(() => {
                         const label = item.name;
-                        const maxLength = 8; // 横幅が広くなったので長めに設定
+                        const maxLength = isMobile ? 6 : 8;
 
                         if (label.length <= maxLength) {
                           return <tspan>{label}</tspan>;
@@ -216,7 +227,7 @@ const CategoryReport: React.FC = () => {
         style={{ borderColor: THEME_COLORS.border }}
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-6">{title}</h3>
-        <div className="flex justify-center w-full">
+        <div className="flex justify-center w-full overflow-x-auto">
           <div className="w-full max-w-md">
             <svg
               width="100%"
@@ -291,12 +302,12 @@ const CategoryReport: React.FC = () => {
                     textAnchor="middle"
                     dominantBaseline="middle"
                     className="text-sm font-medium fill-gray-600"
-                    style={{ fontSize: "11px" }}
+                    style={{ fontSize: isMobile ? "9px" : "11px" }}
                   >
                     {/* 項目名を改行対応で表示 */}
                     {(() => {
                       const label = point.label;
-                      const maxLength = 8;
+                      const maxLength = isMobile ? 6 : 8;
 
                       if (label.length <= maxLength) {
                         return (
@@ -308,7 +319,7 @@ const CategoryReport: React.FC = () => {
                               x={labelX}
                               dy="1.4em"
                               className="font-semibold"
-                              style={{ fontSize: "11px" }}
+                              style={{ fontSize: isMobile ? "9px" : "11px" }}
                             >
                               {point.value.toFixed(1)}%
                             </tspan>
@@ -345,7 +356,7 @@ const CategoryReport: React.FC = () => {
                             x={labelX}
                             dy="1.4em"
                             className="font-semibold"
-                            style={{ fontSize: "11px" }}
+                            style={{ fontSize: isMobile ? "9px" : "11px" }}
                           >
                             {point.value.toFixed(1)}%
                           </tspan>

@@ -553,12 +553,12 @@ const EmployeeMaster = () => {
                 人のメンバーが登録されています
               </p>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-2 sm:space-y-0">
               {/* 人事IDの場合のみ追加ボタンを表示 */}
               {isHRUser() && !isMasterUser() && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors flex items-center space-x-1"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors flex items-center justify-center space-x-1 w-full sm:w-auto"
                 >
                   <svg
                     className="w-5 h-5"
@@ -576,10 +576,12 @@ const EmployeeMaster = () => {
                   <span>新規登録</span>
                 </button>
               )}
-              <span className="text-2xl font-bold text-blue-600">
-                {employees.filter((employee) => employee.role !== 1).length}
-              </span>
-              <span className="text-sm text-gray-500">名</span>
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl font-bold text-blue-600">
+                  {employees.filter((employee) => employee.role !== 1).length}
+                </span>
+                <span className="text-sm text-gray-500">名</span>
+              </div>
             </div>
           </div>
         </div>
@@ -598,6 +600,54 @@ const EmployeeMaster = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                       {/* 左側：アバターと基本情報 */}
                       <div className="flex-1 min-w-0">
+                        {/* スマホサイズでの表示 */}
+                        <div className="block sm:hidden">
+                          <div className="mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                              {employee.employee_name || "名前未設定"}
+                            </h3>
+                          </div>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex items-center space-x-2">
+                              <svg
+                                className="w-4 h-4 text-gray-400 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                />
+                              </svg>
+                              <span className="text-gray-600 truncate">
+                                {employee.mail}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <svg
+                                className="w-4 h-4 text-gray-400 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                />
+                              </svg>
+                              <span className="text-gray-700 font-medium">
+                                {employee.department}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* デスクトップサイズでの表示 */}
                         <div className="hidden sm:grid sm:grid-cols-3 sm:gap-x-4 items-center">
                           <div className="flex items-center space-x-2 truncate">
                             <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
@@ -645,7 +695,7 @@ const EmployeeMaster = () => {
                       </div>
 
                       {/* 右側：権限と削除ボタン */}
-                      <div className="flex items-center space-x-4 relative z-10">
+                      <div className="flex items-center justify-end space-x-2 relative z-10">
                         {/* 人事IDの場合のみ削除ボタンを表示 */}
                         {isHRUser() && !isMasterUser() && (
                           <button
@@ -691,21 +741,16 @@ const EmployeeMaster = () => {
             <div className="p-8">
               {/* ヘッダー */}
               <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-                    {selectedEmployee.employee_name?.charAt(0) || "?"}
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      {selectedEmployee.employee_name || "名前未設定"}
-                    </h2>
-                    <p className="text-gray-600">{selectedEmployee.mail}</p>
-                    {isMasterUser() && (
-                      <p className="text-amber-600 text-sm font-medium mt-1">
-                        ※マスター権限では従業員情報の編集はできません
-                      </p>
-                    )}
-                  </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {selectedEmployee.employee_name || "名前未設定"}
+                  </h2>
+                  <p className="text-gray-600">{selectedEmployee.mail}</p>
+                  {isMasterUser() && (
+                    <p className="text-amber-600 text-sm font-medium mt-1">
+                      ※マスター権限では従業員情報の編集はできません
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={() => setShowDetailModal(false)}
