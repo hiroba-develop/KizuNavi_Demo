@@ -273,7 +273,7 @@ const SummaryReport: React.FC = () => {
     const size = 450; // SVGサイズを拡大
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = 120;
+    const radius = 140; // カテゴリ別レポートと同じサイズ
     const maxValue = 100; // ポジティブ割合なので100%まで
 
     const angleStep = (2 * Math.PI) / data.length;
@@ -300,7 +300,9 @@ const SummaryReport: React.FC = () => {
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-6">{title}</h3>
         <div className="flex justify-center w-full">
-          <div className="w-full max-w-sm">
+          <div className="w-full max-w-md">
+            {" "}
+            {/* カテゴリ別レポートと同じmax-w-md */}
             <svg
               width="100%"
               height="450"
@@ -361,7 +363,7 @@ const SummaryReport: React.FC = () => {
 
               {/* ラベル - 改行対応 スマホサイズ対応 */}
               {points.map((point, index) => {
-                const labelRadius = radius + 65; // ラベルの距離を増加
+                const labelRadius = radius + 60; // カテゴリ別レポートと同じ距離
                 const angle = index * angleStep - Math.PI / 2;
                 const labelX = centerX + Math.cos(angle) * labelRadius;
                 const labelY = centerY + Math.sin(angle) * labelRadius;
@@ -374,12 +376,12 @@ const SummaryReport: React.FC = () => {
                     textAnchor="middle"
                     dominantBaseline="middle"
                     className="text-sm font-medium fill-gray-600"
-                    style={{ fontSize: "10px" }} // フォントサイズを小さく
+                    style={{ fontSize: "11px" }} // カテゴリ別レポートと同じフォントサイズ
                   >
                     {/* 項目名を改行対応で表示 */}
                     {(() => {
                       const label = point.label;
-                      const maxLength = 6; // 1行の最大文字数を短く
+                      const maxLength = 8; // カテゴリ別レポートと同じ最大文字数
 
                       if (label.length <= maxLength) {
                         return (
@@ -391,7 +393,7 @@ const SummaryReport: React.FC = () => {
                               x={labelX}
                               dy="1.4em"
                               className="font-semibold"
-                              style={{ fontSize: "10px" }}
+                              style={{ fontSize: "11px" }}
                             >
                               {point.value.toFixed(1)}%
                             </tspan>
@@ -419,16 +421,16 @@ const SummaryReport: React.FC = () => {
                             <tspan
                               key={lineIndex}
                               x={labelX}
-                              dy={lineIndex === 0 ? "-0.7em" : "1.1em"} // 行間を調整
+                              dy={lineIndex === 0 ? "-0.7em" : "1.2em"} // カテゴリ別レポートと同じ行間
                             >
                               {line}
                             </tspan>
                           ))}
                           <tspan
                             x={labelX}
-                            dy="1.3em"
+                            dy="1.4em"
                             className="font-semibold"
-                            style={{ fontSize: "10px" }}
+                            style={{ fontSize: "11px" }}
                           >
                             {point.value.toFixed(1)}%
                           </tspan>
