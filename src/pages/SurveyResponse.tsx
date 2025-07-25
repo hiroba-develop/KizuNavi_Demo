@@ -398,8 +398,6 @@ const SurveyResponsePage: React.FC = () => {
     );
   }
 
-  const progress = (currentPage / totalPages) * 100;
-
   return (
     <div
       className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8"
@@ -540,19 +538,6 @@ const SurveyResponsePage: React.FC = () => {
               )}{" "}
               / {activeQuestions.length}）
             </p>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="bg-gray-200 rounded-full h-2">
-              <div
-                className="h-2 rounded-full transition-all duration-300"
-                style={{
-                  width: `${progress}%`,
-                  backgroundColor: THEME_COLORS.accent,
-                }}
-              />
-            </div>
           </div>
         </div>
 

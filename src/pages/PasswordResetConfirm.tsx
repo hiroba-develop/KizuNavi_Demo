@@ -14,6 +14,17 @@ const PasswordResetConfirm: React.FC = () => {
   const [error, setError] = useState("");
   const [token, setToken] = useState("");
 
+  // エラーメッセージを5秒後に自動消去
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000); // 5秒後に消去
+
+      return () => clearTimeout(timer); // クリーンアップ
+    }
+  }, [error]);
+
   useEffect(() => {
     const tokenParam = searchParams.get("token");
     if (!tokenParam) {

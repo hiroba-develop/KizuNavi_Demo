@@ -37,7 +37,7 @@ let persistentCompaniesData = loadCompaniesFromStorage();
 const CustomerMaster: React.FC = () => {
   const { user } = useAuth();
   const isMaster = user?.role === "master";
-  const { selectedCustomerId, setSelectedCustomerId, customers } =
+  const { selectedCustomerId, setSelectedCustomerId, customers, addCustomer } =
     useCustomer();
   const [companyData, setCompanyData] = useState<Partial<Company>>({
     name: "",
@@ -57,6 +57,28 @@ const CustomerMaster: React.FC = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isNewMode, setIsNewMode] = useState(false);
+
+  // 成功メッセージを3秒後に自動消去
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess("");
+      }, 3000); // 3秒後に消去
+
+      return () => clearTimeout(timer); // クリーンアップ
+    }
+  }, [success]);
+
+  // エラーメッセージを5秒後に自動消去
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000); // 5秒後に消去
+
+      return () => clearTimeout(timer); // クリーンアップ
+    }
+  }, [error]);
 
   // 新規作成ボタンのハンドラー
   const handleNewCreate = () => {
@@ -208,22 +230,19 @@ const CustomerMaster: React.FC = () => {
 
       if (isNewMode) {
         // 新規登録の場合
-        const newCompany: Company = {
-          id: `${customers.length + 1}`,
+        const newCompanyId = `${customers.length + 1}`;
+
+        // 顧客リストに新しい会社を追加
+        addCustomer({
+          id: newCompanyId,
           name: companyData.name || "",
-          nameKana: companyData.nameKana || "",
-          address: companyData.address || "",
-          postalCode: companyData.postalCode || "",
-          industry: companyData.industry || "",
-          phoneNumber: companyData.phoneNumber || "",
-          email: companyData.email || "",
-          contractModel: companyData.contractModel || "",
-          contractDate: companyData.contractDate || "",
-          paymentCycle: companyData.paymentCycle || "",
-          salesPersonIds: companyData.salesPersonIds || [""],
-          employees: [],
-        };
-        setSelectedCustomerId(newCompany.id);
+        });
+
+        // 新規登録した会社データを永続化データに保存
+        persistentCompaniesData[newCompanyId] = companyData;
+        saveCompaniesToStorage(persistentCompaniesData);
+
+        setSelectedCustomerId(newCompanyId);
         setIsNewMode(false);
       } else {
         // 既存の会社情報を更新（デモ用）
@@ -249,13 +268,14 @@ const CustomerMaster: React.FC = () => {
       }
 
       // 成功メッセージを表示（APIは呼び出さない）
+      const isNewRegistration = isNewMode;
       setSuccess(
-        isNewMode
+        isNewRegistration
           ? "企業情報が正常に新規登録されました。"
           : "企業情報が正常に保存されました。"
       );
 
-      // 永続化データも更新
+      // 永続化データも更新（既存の会社情報を更新する場合）
       if (selectedCustomerId && !isNewMode) {
         persistentCompaniesData[selectedCustomerId] = companyData;
         saveCompaniesToStorage(persistentCompaniesData);

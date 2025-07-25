@@ -8,6 +8,7 @@ interface CustomerContextType {
   selectedPeriod: string;
   setSelectedPeriod: (period: string) => void;
   customers: { id: string; name: string }[];
+  addCustomer: (customer: { id: string; name: string }) => void;
   periods: { value: string; label: string }[];
   isMaster: boolean;
 }
@@ -18,6 +19,7 @@ const defaultCustomerContext: CustomerContextType = {
   selectedPeriod: "2024-04-01",
   setSelectedPeriod: () => {},
   customers: [],
+  addCustomer: () => {},
   periods: [],
   isMaster: false,
 };
@@ -40,6 +42,13 @@ export const CustomerProvider: React.FC<CustomerProviderProps> = ({
   const [selectedCustomerId, setSelectedCustomerIdState] = useState("3");
   const [selectedPeriod, setSelectedPeriod] = useState("2024-04-01");
 
+  // 顧客リストを状態として管理
+  const [customers, setCustomers] = useState([
+    { id: "1", name: "株式会社サンプル" },
+    { id: "2", name: "株式会社テスト" },
+    { id: "3", name: "qqq" },
+  ]);
+
   // マスタ権限を持つユーザーのみが顧客選択を変更できる
   const setSelectedCustomerId = (id: string) => {
     if (isMaster) {
@@ -49,12 +58,22 @@ export const CustomerProvider: React.FC<CustomerProviderProps> = ({
     }
   };
 
-  // ダミーデータ（実際のアプリでは適切なAPIから取得する）
-  const customers = [
-    { id: "1", name: "株式会社サンプル" },
-    { id: "2", name: "株式会社テスト" },
-    { id: "3", name: "qqq" },
-  ];
+  // 新しい顧客を追加する関数
+  const addCustomer = (customer: { id: string; name: string }) => {
+    setCustomers((prevCustomers) => {
+      // 既存の顧客IDと重複しないかチェック
+      const existingCustomer = prevCustomers.find((c) => c.id === customer.id);
+      if (existingCustomer) {
+        // 既存の顧客の名前を更新
+        return prevCustomers.map((c) =>
+          c.id === customer.id ? { ...c, name: customer.name } : c
+        );
+      } else {
+        // 新しい顧客を追加
+        return [...prevCustomers, customer];
+      }
+    });
+  };
 
   // 実施日のデータ
   const periods = [
@@ -73,6 +92,7 @@ export const CustomerProvider: React.FC<CustomerProviderProps> = ({
         selectedPeriod,
         setSelectedPeriod,
         customers,
+        addCustomer,
         periods,
         isMaster,
       }}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import type { LoginRequest, UserProfile } from "../types";
@@ -28,6 +28,17 @@ const Login: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // エラーメッセージを5秒後に自動消去
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000); // 5秒後に消去
+
+      return () => clearTimeout(timer); // クリーンアップ
+    }
+  }, [error]);
 
   const { login } = useAuth();
   const navigate = useNavigate();
