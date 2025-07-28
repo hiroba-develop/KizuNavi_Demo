@@ -65,6 +65,18 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
           name: "カテゴリ別レポート",
           href: "/reports/category",
         },
+        {
+          name: "小カテゴリ別レポート",
+          href: "/reports/subcategory",
+        },
+        {
+          name: "設問別レポート",
+          href: "/reports/question",
+        },
+        {
+          name: "個別レポート",
+          href: "/reports/individual",
+        },
       ],
     },
     {
