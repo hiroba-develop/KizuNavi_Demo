@@ -5,23 +5,6 @@ import { useCustomer } from "../context/CustomerContext";
 import ReportService from "../utils/reportService";
 import CustomerSelector from "../components/CustomerSelector";
 
-// TODO: Use SimpleChartItem interface when needed
-// interface SimpleChartItem {
-//   name?: string;
-//   category?: string;
-//   age?: string;
-//   tenure?: string;
-//   score: number;
-// }
-
-// TODO: Use DashboardChartData interface when needed
-// interface DashboardChartData {
-//   departmentKizuna: SimpleChartItem[];
-//   categoryKizuna: SimpleChartItem[];
-//   generationKizuna: SimpleChartItem[];
-//   tenureKizuna: SimpleChartItem[];
-// }
-
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { selectedCustomerId, selectedPeriod } = useCustomer();
@@ -29,13 +12,10 @@ const Dashboard: React.FC = () => {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
-  // const [isMobile, setIsMobile] = useState(false);
 
   // モバイルデバイスの検出
   useEffect(() => {
-    const checkMobile = () => {
-      // setIsMobile(window.innerWidth < 640);
-    };
+    const checkMobile = () => {};
 
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -623,140 +603,6 @@ const Dashboard: React.FC = () => {
     );
   };
 
-  const LineChart = ({ data, title }: { data: any[]; title: string }) => {
-    const maxValue = 6;
-
-    return (
-      <div className="space-y-4 sm:space-y-6">
-        <h4 className="text-base sm:text-lg font-medium text-gray-700">
-          {title}
-        </h4>
-        <div className="w-full h-96 sm:h-[450px] md:h-[500px]">
-          <svg
-            width="100%"
-            height="100%"
-            viewBox="0 0 700 400"
-            preserveAspectRatio="xMidYMid meet"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {(() => {
-              const width = 700;
-              const height = 400;
-              const padding = { top: 20, right: 40, bottom: 80, left: 50 };
-              const chartWidth = width - padding.left - padding.right;
-              const chartHeight = height - padding.top - padding.bottom;
-
-              const points = data.map((item, index) => {
-                const x =
-                  padding.left + (index * chartWidth) / (data.length - 1);
-                const y =
-                  padding.top +
-                  chartHeight -
-                  (item.score / maxValue) * chartHeight;
-                return {
-                  x,
-                  y,
-                  label: item.age || item.tenure,
-                  score: item.score,
-                };
-              });
-
-              const pathData = points
-                .map(
-                  (point, index) =>
-                    `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`
-                )
-                .join(" ");
-
-              return (
-                <>
-                  {/* Y-axis labels */}
-                  {[0, 1, 2, 3, 4, 5, 6].map((level) => {
-                    const y =
-                      padding.top +
-                      chartHeight -
-                      (level / maxValue) * chartHeight;
-                    return (
-                      <g key={level}>
-                        <line
-                          x1={padding.left}
-                          y1={y}
-                          x2={width - padding.right}
-                          y2={y}
-                          stroke={THEME_COLORS.border}
-                          strokeWidth="0.5"
-                        />
-                        <text
-                          x={padding.left - 15}
-                          y={y + 5}
-                          textAnchor="end"
-                          className="text-lg fill-gray-500"
-                        >
-                          {level}
-                        </text>
-                      </g>
-                    );
-                  })}
-
-                  {/* X-axis labels */}
-                  {points.map((point, index) => (
-                    <foreignObject
-                      key={index}
-                      x={point.x - chartWidth / (data.length - 1) / 2}
-                      y={padding.top + chartHeight + 5}
-                      width={chartWidth / (data.length - 1)}
-                      height={padding.bottom - 5}
-                    >
-                      <div
-                        className="w-full h-full flex items-center justify-center text-center text-sm text-gray-600"
-                        style={{ lineHeight: 1.2, fontSize: "14px" }}
-                      >
-                        {point.label}
-                      </div>
-                    </foreignObject>
-                  ))}
-
-                  {/* Line */}
-                  <path
-                    d={pathData}
-                    fill="none"
-                    stroke={THEME_COLORS.charts.line}
-                    strokeWidth="3"
-                  />
-
-                  {/* Points with values */}
-                  {points.map((point, index) => (
-                    <g key={index}>
-                      <circle
-                        cx={point.x}
-                        cy={point.y}
-                        r="5"
-                        fill={THEME_COLORS.charts.line}
-                        className="hover:r-7 cursor-pointer"
-                      >
-                        {/* <title>
-                          {`${point.label}: ${point.score.toFixed(1)}`}
-                        </title> */}
-                      </circle>
-                      <text
-                        x={point.x}
-                        y={point.y - 15}
-                        textAnchor="middle"
-                        className="text-base font-medium fill-gray-700"
-                      >
-                        {point.score.toFixed(1)}
-                      </text>
-                    </g>
-                  ))}
-                </>
-              );
-            })()}
-          </svg>
-        </div>
-      </div>
-    );
-  };
-
   const ScoreIndicator = ({ score }: { score: number }) => {
     let status: string;
     let color: string;
@@ -810,6 +656,119 @@ const Dashboard: React.FC = () => {
       {children}
     </div>
   );
+
+  const DataTable = ({ data }: { data: any[] }) => {
+    // 最高スコアと最低スコアを見つける
+    const maxScore = Math.max(...data.map((item) => item.score));
+    const minScore = Math.min(...data.map((item) => item.score));
+
+    // スコアに応じたアイコンを返す関数
+    const ScoreIcon = ({ score }: { score: number }) => {
+      if (score === maxScore) {
+        return (
+          <svg
+            className="w-5 h-5 text-yellow-500 mr-1"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <title>最高スコア</title>
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        );
+      } else if (score === minScore) {
+        return (
+          <svg
+            className="w-5 h-5 text-red-500 mr-1"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <title>最低スコア</title>
+            <path d="M10 15 L5 5 L15 5 Z" />
+          </svg>
+        );
+      }
+      return null;
+    };
+
+    return (
+      <div className="overflow-x-auto mb-4" style={{ height: "fit-content" }}>
+        <table
+          className="border w-full"
+          style={{
+            borderColor: THEME_COLORS.border,
+            minWidth: "100%",
+            width: "max-content",
+          }}
+        >
+          <thead>
+            <tr>
+              <th
+                className="py-2 px-4 font-medium text-gray-900 text-base border whitespace-nowrap"
+                style={{
+                  borderColor: THEME_COLORS.border,
+                  backgroundColor: "#f8fafc",
+                  minWidth: "80px",
+                }}
+              >
+                指標
+              </th>
+              {data.map((item, index) => (
+                <th
+                  key={index}
+                  className="py-2 px-4 font-medium text-gray-900 text-base text-center whitespace-nowrap border"
+                  style={{
+                    borderColor: THEME_COLORS.border,
+                    backgroundColor: "#f8fafc",
+                    minWidth: "120px",
+                  }}
+                >
+                  {item.name || item.category || item.age || item.tenure}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td
+                className="py-2 px-4 font-medium text-gray-700 border whitespace-nowrap"
+                style={{
+                  borderColor: THEME_COLORS.border,
+                  minWidth: "80px",
+                }}
+              >
+                スコア
+              </td>
+              {data.map((item, index) => (
+                <td
+                  key={index}
+                  className="py-2 px-4 text-center whitespace-nowrap border"
+                  style={{
+                    borderColor: THEME_COLORS.border,
+                    minWidth: "120px",
+                  }}
+                >
+                  <div className="flex items-center justify-center">
+                    <ScoreIcon score={item.score} />
+                    <span
+                      className={`font-semibold ${
+                        item.score === maxScore
+                          ? "text-yellow-600"
+                          : item.score === minScore
+                          ? "text-red-600"
+                          : "text-blue-600"
+                      }`}
+                    >
+                      {item.score.toFixed(1)}
+                    </span>
+                  </div>
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   // Show loading state
   if (isLoading) {
@@ -984,12 +943,20 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Department Bar Chart */}
         <Card>
-          <BarChart data={chartData.departmentKizuna} title="部門別キズナ度" />
+          <h4 className="text-base sm:text-lg font-medium text-gray-700 mb-4">
+            部門別キズナ度
+          </h4>
+          <DataTable data={chartData.departmentKizuna} />
+          <BarChart data={chartData.departmentKizuna} title="" />
         </Card>
 
-        {/* Generation Line Chart */}
+        {/* Generation Bar Chart */}
         <Card>
-          <LineChart data={chartData.generationKizuna} title="世代別キズナ度" />
+          <h4 className="text-base sm:text-lg font-medium text-gray-700 mb-4">
+            世代別キズナ度
+          </h4>
+          <DataTable data={chartData.generationKizuna} />
+          <BarChart data={chartData.generationKizuna} title="" />
         </Card>
       </div>
 
@@ -997,15 +964,20 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Category Radar Chart */}
         <Card>
-          <RadarChart
-            data={chartData.categoryKizuna}
-            title="カテゴリ別キズナ度"
-          />
+          <h4 className="text-base sm:text-lg font-medium text-gray-700 mb-4">
+            カテゴリ別キズナ度
+          </h4>
+          <DataTable data={chartData.categoryKizuna} />
+          <RadarChart data={chartData.categoryKizuna} title="" />
         </Card>
 
-        {/* Tenure Line Chart */}
+        {/* Tenure Bar Chart */}
         <Card>
-          <LineChart data={chartData.tenureKizuna} title="勤続年数別キズナ度" />
+          <h4 className="text-base sm:text-lg font-medium text-gray-700 mb-4">
+            勤続年数別キズナ度
+          </h4>
+          <DataTable data={chartData.tenureKizuna} />
+          <BarChart data={chartData.tenureKizuna} title="" />
         </Card>
       </div>
     </div>

@@ -113,12 +113,9 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       const hasRequiredPermission = hasPermission(item.permission);
       if (!hasRequiredPermission) return false;
 
-      // Survey screen accessible by HR and Employee, but not master
+      // Survey screen accessible by Employee only, but not master
       if (item.href === "/survey") {
-        return (
-          (user?.idType === "hr" || user?.idType === "employee") &&
-          user?.role !== "master"
-        );
+        return user?.idType === "employee" && user?.role !== "master";
       }
 
       // Employees can only access survey screen
@@ -139,6 +136,7 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
       return true;
     })
     .map((item) => {
+      // 顧客情報メニューの制限
       if (
         item.name === "顧客情報" &&
         item.subItems &&
@@ -150,6 +148,22 @@ const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
         );
         return { ...item, subItems: filteredSubItems };
       }
+
+      // 分析メニューの制限（人事IDの場合）
+      if (
+        item.name === "分析" &&
+        item.subItems &&
+        user?.idType === "hr" &&
+        user?.role !== "master"
+      ) {
+        const filteredSubItems = item.subItems.filter(
+          (subItem) =>
+            subItem.href === "/reports/summary" ||
+            subItem.href === "/reports/category"
+        );
+        return { ...item, subItems: filteredSubItems };
+      }
+
       return item;
     })
     .filter((item) => !item.subItems || item.subItems.length > 0);

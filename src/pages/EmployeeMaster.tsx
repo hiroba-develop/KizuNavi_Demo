@@ -865,6 +865,26 @@ const EmployeeMaster = () => {
                         </p>
                       </div>
                     )}
+                    {selectedEmployee.length_service && (
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-600">
+                          勤続年数
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedEmployee.length_service === 1
+                            ? "3年未満"
+                            : selectedEmployee.length_service === 2
+                            ? "3-7年"
+                            : selectedEmployee.length_service === 3
+                            ? "8-13年"
+                            : selectedEmployee.length_service === 4
+                            ? "14-19年"
+                            : selectedEmployee.length_service === 5
+                            ? "20年以上"
+                            : "未設定"}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1075,6 +1095,28 @@ const EmployeeMaster = () => {
                     }
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    勤続年数
+                  </label>
+                  <select
+                    value={newEmployee.length_service}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "length_service",
+                        parseInt(e.target.value)
+                      )
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="0">選択してください</option>
+                    <option value="1">3年未満</option>
+                    <option value="2">3-7年</option>
+                    <option value="3">8-13年</option>
+                    <option value="4">14-19年</option>
+                    <option value="5">20年以上</option>
+                  </select>
                 </div>
 
                 <div>
@@ -1299,7 +1341,28 @@ const EmployeeMaster = () => {
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    勤続年数
+                  </label>
+                  <select
+                    value={editEmployee.length_service}
+                    onChange={(e) =>
+                      setEditEmployee((prev) => ({
+                        ...prev,
+                        length_service: parseInt(e.target.value),
+                      }))
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="0">選択してください</option>
+                    <option value="1">3年未満</option>
+                    <option value="2">3-7年</option>
+                    <option value="3">8-13年</option>
+                    <option value="4">14-19年</option>
+                    <option value="5">20年以上</option>
+                  </select>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     ID種別
