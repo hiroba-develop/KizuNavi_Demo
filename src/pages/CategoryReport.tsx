@@ -27,6 +27,10 @@ const CategoryReport: React.FC = () => {
     { name: "人事制度", score: 4.0, positiveRate: 62.4 },
     { name: "ワークライフバランス", score: 4.9, positiveRate: 78.6 },
     { name: "改革の息吹", score: 4.3, positiveRate: 66.9 },
+    { name: "従業員の当事者意識", score: 4.6, positiveRate: 72.5 },
+    { name: "従業員の自己肯定感", score: 4.4, positiveRate: 70.2 },
+    { name: "人材の流動性", score: 4.2, positiveRate: 65.8 },
+    { name: "コーポレートガバナンス", score: 4.7, positiveRate: 73.4 },
   ];
 
   // 顧客IDと期間に基づいて数値を調整
@@ -61,12 +65,17 @@ const CategoryReport: React.FC = () => {
     data: typeof currentData;
     title: string;
   }) => {
-    // 横幅を大幅に増やしてX軸ラベルを読みやすく
-    const width = 800; // 500から800に増加
-    const height = 450; // 400から450に増加
-    const padding = 80; // 60から80に増加
+    // 画面サイズに応じてグラフのサイズと余白を設定
+    const width = isMobile ? 1600 : 1200; // サイズを縮小
+    const height = isMobile ? 450 : 400;
+    const padding = {
+      top: 40,
+      right: 80,
+      bottom: isMobile ? 160 : 120,
+      left: 80,
+    };
     const maxValue = 6;
-    const chartHeight = height - 2 * padding;
+    const chartHeight = height - padding.top - padding.bottom;
 
     return (
       <div
@@ -74,33 +83,34 @@ const CategoryReport: React.FC = () => {
         style={{ borderColor: THEME_COLORS.border }}
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-6">{title}</h3>
-        <div className="flex justify-start w-full overflow-x-auto">
-          <div className="w-full max-w-4xl min-w-[700px]">
+        <div className="w-full overflow-x-auto pb-4">
+          <div className={`${isMobile ? "w-[1680px]" : "w-[1280px]"}`}>
             {" "}
             {/* スマホでも適度なサイズに調整 */}
             <svg
               width="100%"
-              height="450"
-              viewBox="0 0 800 450"
-              preserveAspectRatio="xMidYMid meet"
+              height={isMobile ? "450" : "400"}
+              viewBox={`0 0 ${width} ${height}`}
+              preserveAspectRatio="xMinYMid meet"
               xmlns="http://www.w3.org/2000/svg"
               className="w-full h-auto"
             >
               {/* Y-axis labels */}
               {[0, 1, 2, 3, 4, 5, 6].map((level) => {
-                const y = height - padding - (level / maxValue) * chartHeight;
+                const y =
+                  height - padding.bottom - (level / maxValue) * chartHeight;
                 return (
                   <g key={level}>
                     <line
-                      x1={padding}
+                      x1={padding.left}
                       y1={y}
-                      x2={width - padding}
+                      x2={width - padding.right}
                       y2={y}
                       stroke={THEME_COLORS.border}
                       strokeWidth="0.5"
                     />
                     <text
-                      x={padding - 25}
+                      x={padding.left - 10}
                       y={y + 4}
                       textAnchor="end"
                       className="text-sm fill-gray-500"
@@ -113,11 +123,16 @@ const CategoryReport: React.FC = () => {
 
               {/* Bars */}
               {data.map((item, index) => {
-                const barWidth = (width - padding - 40) / data.length - 10; // バー幅を調整
+                const barWidth =
+                  ((width - padding.left - padding.right) / data.length) *
+                  (isMobile ? 0.4 : 0.5); // バー幅を調整
                 const x =
-                  padding + (index * (width - padding - 40)) / data.length + 5; // 位置調整
+                  padding.left +
+                  (index * (width - padding.left - padding.right)) /
+                    data.length +
+                  ((width - padding.left - padding.right) / data.length) * 0.3; // バー間の間隔を均等に
                 const barHeight = (item.score / maxValue) * chartHeight;
-                const y = chartHeight - barHeight + padding;
+                const y = height - padding.bottom - barHeight;
 
                 return (
                   <g key={index}>
@@ -140,47 +155,24 @@ const CategoryReport: React.FC = () => {
                       {item.score.toFixed(1)}
                     </text>
                     {/* X軸ラベル - 改行対応 */}
-                    <text
-                      x={x + barWidth / 2}
-                      y={height - 40}
-                      textAnchor="middle"
-                      className="text-sm fill-gray-600"
-                      style={{ fontSize: isMobile ? "10px" : "12px" }}
+                    <foreignObject
+                      x={x - (isMobile ? barWidth * 1.2 : barWidth * 0.8)}
+                      y={height - padding.bottom + 10}
+                      width={isMobile ? barWidth * 3 : barWidth * 2.0}
+                      height={isMobile ? 140 : 100}
                     >
-                      {/* 文字列を適切な長さで改行 */}
-                      {(() => {
-                        const label = item.name;
-                        const maxLength = isMobile ? 6 : 8;
-
-                        if (label.length <= maxLength) {
-                          return <tspan>{label}</tspan>;
-                        }
-
-                        // 改行処理
-                        const lines = [];
-                        let currentLine = "";
-                        for (let i = 0; i < label.length; i++) {
-                          currentLine += label[i];
-                          if (
-                            currentLine.length >= maxLength ||
-                            i === label.length - 1
-                          ) {
-                            lines.push(currentLine);
-                            currentLine = "";
-                          }
-                        }
-
-                        return lines.map((line, index) => (
-                          <tspan
-                            key={index}
-                            x={x + barWidth / 2}
-                            dy={index === 0 ? 0 : 15}
-                          >
-                            {line}
-                          </tspan>
-                        ));
-                      })()}
-                    </text>
+                      <div
+                        className="text-center text-sm text-gray-600 px-1"
+                        style={{
+                          fontSize: isMobile ? "11px" : "12px",
+                          lineHeight: "1.2",
+                          wordBreak: "break-word",
+                          paddingLeft: "4ch",
+                        }}
+                      >
+                        {item.name}
+                      </div>
+                    </foreignObject>
                   </g>
                 );
               })}
@@ -406,20 +398,6 @@ const CategoryReport: React.FC = () => {
             <h2 className="text-xl xl:text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
               カテゴリ別データ
             </h2>
-            <div className="text-sm text-gray-600">
-              実施日:{" "}
-              {selectedPeriod === "2024-04-01"
-                ? "2024年4月1日"
-                : selectedPeriod === "2024-03-01"
-                ? "2024年3月1日"
-                : selectedPeriod === "2024-02-01"
-                ? "2024年2月1日"
-                : selectedPeriod === "2024-01-01"
-                ? "2024年1月1日"
-                : selectedPeriod === "2023-10-01"
-                ? "2023年10月1日"
-                : "不明"}
-            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full">
@@ -428,18 +406,16 @@ const CategoryReport: React.FC = () => {
                   className="border-b"
                   style={{ borderColor: THEME_COLORS.border }}
                 >
-                  <th className=" py-3 px-4 font-medium text-gray-900">
+                  <th className="py-3 px-4 font-medium text-gray-900 whitespace-nowrap">
                     カテゴリ
                   </th>
                   {currentData.map((item) => (
                     <th
                       key={item.name}
-                      className="text-center py-3 px-2 font-medium text-gray-900 min-w-[80px]"
+                      className="text-center py-3 px-2 font-medium text-gray-900 min-w-[80px] "
                     >
-                      <div className="text-xs">
-                        {item.name.length > 8
-                          ? item.name.substring(0, 7) + "..."
-                          : item.name}
+                      <div className="text-sm whitespace-nowrap">
+                        {item.name}
                       </div>
                     </th>
                   ))}
@@ -450,7 +426,7 @@ const CategoryReport: React.FC = () => {
                   className="border-b"
                   style={{ borderColor: THEME_COLORS.border }}
                 >
-                  <td className="py-3 px-4 font-medium text-gray-700">
+                  <td className="py-3 px-4 font-medium text-gray-700 whitespace-nowrap">
                     スコア
                   </td>
                   {currentData.map((item) => (
@@ -462,7 +438,7 @@ const CategoryReport: React.FC = () => {
                   ))}
                 </tr>
                 <tr>
-                  <td className="py-3 px-4 font-medium text-gray-700">
+                  <td className="py-3 px-4 font-medium text-gray-700 whitespace-nowrap">
                     ポジティブ割合
                   </td>
                   {currentData.map((item) => (

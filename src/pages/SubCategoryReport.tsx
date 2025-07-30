@@ -474,20 +474,6 @@ const SubCategoryReport: React.FC = () => {
             <h2 className="text-xl xl:text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
               {selectedCategory} - 小カテゴリ別データ
             </h2>
-            <div className="text-sm text-gray-600">
-              実施日:{" "}
-              {selectedPeriod === "2024-04-01"
-                ? "2024年4月1日"
-                : selectedPeriod === "2024-03-01"
-                ? "2024年3月1日"
-                : selectedPeriod === "2024-02-01"
-                ? "2024年2月1日"
-                : selectedPeriod === "2024-01-01"
-                ? "2024年1月1日"
-                : selectedPeriod === "2023-10-01"
-                ? "2023年10月1日"
-                : "不明"}
-            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full">

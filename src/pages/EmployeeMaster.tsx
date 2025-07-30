@@ -479,7 +479,7 @@ const EmployeeMaster = () => {
       {/* Header with customer selector */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
-          従業員マスタ
+          従業員情報
         </h1>
         <CustomerSelector />
       </div>
@@ -736,7 +736,7 @@ const EmployeeMaster = () => {
 
       {/* メンバー詳細表示モーダル */}
       {showDetailModal && selectedEmployee && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50 bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50 bg-gray-500/30 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-8">
               {/* ヘッダー */}
@@ -940,7 +940,7 @@ const EmployeeMaster = () => {
 
       {/* メンバー追加モーダル */}
       {showAddModal && (
-        <div className="fixed inset-0 overflow-y-auto h-full w-full z-50 bg-black bg-opacity-50">
+        <div className="fixed inset-0 overflow-y-auto h-full w-full z-50 bg-gray-500/30 backdrop-blur-sm">
           <div className="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <div className="flex justify-between items-center mb-6">
@@ -1159,7 +1159,7 @@ const EmployeeMaster = () => {
 
       {/* メンバー編集モーダル */}
       {showEditModal && (
-        <div className="fixed inset-0 overflow-y-auto h-full w-full z-50 bg-black bg-opacity-50">
+        <div className="fixed inset-0 overflow-y-auto h-full w-full z-50 bg-gray-500/30 backdrop-blur-sm">
           <div className="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <div className="flex justify-between items-center mb-6">
