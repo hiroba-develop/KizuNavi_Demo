@@ -405,11 +405,7 @@ const Dashboard: React.FC = () => {
                           y={y}
                           width={barWidth}
                           height={barHeight}
-                          fill={
-                            title === "部門別キズナ度"
-                              ? "#2C9AEF"
-                              : THEME_COLORS.charts.bar
-                          }
+                          fill={THEME_COLORS.accent}
                           rx="2"
                           className="hover:opacity-80 cursor-pointer"
                         >

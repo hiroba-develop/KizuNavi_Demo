@@ -44,7 +44,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
           <select
             value={selectedCustomerId}
             onChange={handleCustomerChange}
-            className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 max-w-none sm:max-w-[180px] lg:max-w-[200px]"
+            className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 max-w-[240px] sm:max-w-[180px] lg:max-w-[200px]"
             style={{ borderColor: THEME_COLORS.border }}
           >
             {customers.map((customer) => (
@@ -55,7 +55,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
           </select>
         ) : (
           <span
-            className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 text-gray-700 min-w-0 sm:max-w-[180px] lg:max-w-[200px]"
+            className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 text-gray-700 min-w-0 max-w-[240px] sm:max-w-[180px] lg:max-w-[200px]"
             style={{ borderColor: THEME_COLORS.border }}
           >
             {selectedCustomerName}
@@ -71,7 +71,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
           <select
             value={selectedPeriod}
             onChange={handlePeriodChange}
-            className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 max-w-none sm:max-w-[180px] lg:max-w-[200px]"
+            className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 max-w-[240px] sm:max-w-[180px] lg:max-w-[200px]"
             style={{ borderColor: THEME_COLORS.border }}
           >
             {periods.map((period) => (

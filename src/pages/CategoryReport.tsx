@@ -382,10 +382,12 @@ const CategoryReport: React.FC = () => {
     <div className="space-y-4 sm:space-y-6">
       {/* Header with customer selector */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
-        <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-gray-900 flex-shrink-0">
           カテゴリ別レポート
         </h1>
-        <CustomerSelector showPeriod={true} />
+        <div className="flex justify-end w-full sm:w-auto">
+          <CustomerSelector showPeriod={true} />
+        </div>
       </div>
 
       {/* Data Table */}
@@ -412,11 +414,9 @@ const CategoryReport: React.FC = () => {
                   {currentData.map((item) => (
                     <th
                       key={item.name}
-                      className="text-center py-3 px-2 font-medium text-gray-900 min-w-[80px] "
+                      className="text-center py-3 px-2 font-medium text-gray-900 w-[120px]"
                     >
-                      <div className="text-sm whitespace-nowrap">
-                        {item.name}
-                      </div>
+                      <div className="text-sm break-words">{item.name}</div>
                     </th>
                   ))}
                 </tr>

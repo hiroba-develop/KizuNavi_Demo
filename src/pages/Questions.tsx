@@ -218,14 +218,6 @@ const Questions: React.FC = () => {
                     <div className="flex items-center gap-3 mb-3">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
                         設問 {question.order}
-                        {annotationNumber && (
-                          <span
-                            className="ml-1 text-xs"
-                            style={{ color: THEME_COLORS.status.error }}
-                          >
-                            ※{annotationNumber}
-                          </span>
-                        )}
                       </span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
@@ -304,22 +296,6 @@ const Questions: React.FC = () => {
                                   >
                                     キャンセル
                                   </button>
-                                  {questions.find(
-                                    (q) => q.id === editingAnnotation
-                                  )?.note &&
-                                    isHR && (
-                                      <button
-                                        onClick={() =>
-                                          editingAnnotation &&
-                                          handleDeleteAnnotation(
-                                            editingAnnotation
-                                          )
-                                        }
-                                        className="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100"
-                                      >
-                                        削除
-                                      </button>
-                                    )}
                                 </div>
                               </div>
                             ) : (
