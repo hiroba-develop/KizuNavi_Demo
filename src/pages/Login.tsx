@@ -154,7 +154,7 @@ const Login: React.FC = () => {
                   htmlFor="department"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  部署{" "}
+                  部門{" "}
                   <span style={{ color: THEME_COLORS.status.error }}>*</span>
                 </label>
                 <input

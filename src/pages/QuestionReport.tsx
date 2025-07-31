@@ -18,9 +18,12 @@ interface QuestionData {
 }
 
 const QuestionReport: React.FC = () => {
-  const { selectedPeriod, selectedCustomerId } = useCustomer();
+  const { selectedPeriod, selectedCustomerId, periods } = useCustomer();
   const { getQuestionsForCustomer } = useQuestions();
   const [questionData, setQuestionData] = useState<QuestionData[]>([]);
+  const [comparisonData, setComparisonData] = useState<
+    QuestionData[] | undefined
+  >();
   //   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -105,8 +108,67 @@ const QuestionReport: React.FC = () => {
         });
 
       setQuestionData(data);
+
+      // 最新の実施日を選択している場合のみ、前回のデータを比較用に取得
+      if (selectedPeriod === periods[0].value && periods.length > 1) {
+        const previousPeriodMultiplier = 0.95;
+        const comparisonData: QuestionData[] = customerQuestions
+          .filter((q) => q.type === "rating") // 評定質問のみ
+          .map((question, index) => {
+            // ベースとなる評価分布を生成
+            const baseHigh = 45 + (index % 3) * 10; // 45-65%
+            const baseMid = 25 + (index % 2) * 5; // 25-30%
+            const baseLow = 30 - (index % 3) * 5; // 15-30%
+
+            // 顧客・期間による調整
+            const adjustedHigh =
+              Math.round(
+                baseHigh * customerMultiplier * previousPeriodMultiplier * 10
+              ) / 10;
+            const adjustedMid =
+              Math.round(
+                baseMid * customerMultiplier * previousPeriodMultiplier * 10
+              ) / 10;
+            const adjustedLow =
+              Math.round(
+                baseLow * customerMultiplier * previousPeriodMultiplier * 10
+              ) / 10;
+
+            // 合計が100%になるように調整
+            const total = adjustedHigh + adjustedMid + adjustedLow;
+            const normalizedHigh =
+              Math.round((adjustedHigh / total) * 100 * 10) / 10;
+            const normalizedMid =
+              Math.round((adjustedMid / total) * 100 * 10) / 10;
+            const normalizedLow =
+              Math.round((100 - normalizedHigh - normalizedMid) * 10) / 10;
+
+            // スコア計算
+            const baseAverage = 3.5 + (index % 3) * 0.5; // 3.5-4.5
+            const adjustedAverage =
+              baseAverage * customerMultiplier * previousPeriodMultiplier;
+            const finalAverage = Math.round(adjustedAverage * 10) / 10;
+
+            return {
+              id: question.id,
+              text: question.text,
+              category: question.category,
+              note: question.note,
+              highPositiveRate: normalizedHigh,
+              midPositiveRate: normalizedMid,
+              lowPositiveRate: normalizedLow,
+              maxScore: 6,
+              minScore: 1,
+              averageScore: finalAverage,
+            };
+          });
+
+        setComparisonData(comparisonData);
+      } else {
+        setComparisonData(undefined);
+      }
     }
-  }, [selectedCustomerId, selectedPeriod, getQuestionsForCustomer]);
+  }, [selectedCustomerId, selectedPeriod, getQuestionsForCustomer, periods]);
 
   const getScoreColor = (score: number): string => {
     if (score >= 4.5) return "text-green-600";
@@ -131,9 +193,10 @@ const QuestionReport: React.FC = () => {
     }
   };
 
-  const PositiveRateBar: React.FC<{ question: QuestionData }> = ({
-    question,
-  }) => {
+  const PositiveRateBar: React.FC<{
+    question: QuestionData;
+    comparisonQuestion?: QuestionData;
+  }> = ({ question, comparisonQuestion }) => {
     return (
       <div className="w-full">
         <div
@@ -176,6 +239,53 @@ const QuestionReport: React.FC = () => {
           <span>中評価 {question.midPositiveRate}%</span>
           <span>低評価 {question.lowPositiveRate}%</span>
         </div>
+        {comparisonQuestion && (
+          <>
+            <div
+              className="flex h-6 rounded-lg overflow-hidden border mt-2"
+              style={{ borderColor: THEME_COLORS.border }}
+            >
+              {/* 高評価 (5-6) */}
+              <div
+                className={`${getPositiveRateColor(
+                  comparisonQuestion.highPositiveRate,
+                  "high"
+                )} opacity-60 flex items-center justify-center text-white text-xs font-medium`}
+                style={{ width: `${comparisonQuestion.highPositiveRate}%` }}
+              >
+                {comparisonQuestion.highPositiveRate >= 15 &&
+                  `${comparisonQuestion.highPositiveRate}%`}
+              </div>
+              {/* 中評価 (3-4) */}
+              <div
+                className={`${getPositiveRateColor(
+                  comparisonQuestion.midPositiveRate,
+                  "mid"
+                )} opacity-60 flex items-center justify-center text-white text-xs font-medium`}
+                style={{ width: `${comparisonQuestion.midPositiveRate}%` }}
+              >
+                {comparisonQuestion.midPositiveRate >= 15 &&
+                  `${comparisonQuestion.midPositiveRate}%`}
+              </div>
+              {/* 低評価 (1-2) */}
+              <div
+                className={`${getPositiveRateColor(
+                  comparisonQuestion.lowPositiveRate,
+                  "low"
+                )} opacity-60 flex items-center justify-center text-white text-xs font-medium`}
+                style={{ width: `${comparisonQuestion.lowPositiveRate}%` }}
+              >
+                {comparisonQuestion.lowPositiveRate >= 15 &&
+                  `${comparisonQuestion.lowPositiveRate}%`}
+              </div>
+            </div>
+            <div className="flex justify-between mt-1 text-xs text-gray-400">
+              <span>高評価 {comparisonQuestion.highPositiveRate}%</span>
+              <span>中評価 {comparisonQuestion.midPositiveRate}%</span>
+              <span>低評価 {comparisonQuestion.lowPositiveRate}%</span>
+            </div>
+          </>
+        )}
       </div>
     );
   };
@@ -276,7 +386,12 @@ const QuestionReport: React.FC = () => {
                       <h5 className="text-sm font-medium text-gray-700 mb-3">
                         評価分布
                       </h5>
-                      <PositiveRateBar question={question} />
+                      <PositiveRateBar
+                        question={question}
+                        comparisonQuestion={comparisonData?.find(
+                          (q) => q.id === question.id
+                        )}
+                      />
                     </div>
 
                     {/* スコア情報 */}
@@ -296,6 +411,23 @@ const QuestionReport: React.FC = () => {
                           >
                             {question.averageScore}
                           </div>
+                          {comparisonData?.find(
+                            (q) => q.id === question.id
+                          ) && (
+                            <div
+                              className={`text-sm font-medium mt-1 ${getScoreColor(
+                                comparisonData.find((q) => q.id === question.id)
+                                  ?.averageScore || 0
+                              )}`}
+                            >
+                              (前回:{" "}
+                              {
+                                comparisonData.find((q) => q.id === question.id)
+                                  ?.averageScore
+                              }
+                              )
+                            </div>
+                          )}
                         </div>
                         <div className="p-3 rounded-lg bg-green-50">
                           <div className="text-xs text-gray-600 mb-1">
@@ -304,6 +436,18 @@ const QuestionReport: React.FC = () => {
                           <div className="text-lg font-bold text-green-600">
                             {question.maxScore}
                           </div>
+                          {comparisonData?.find(
+                            (q) => q.id === question.id
+                          ) && (
+                            <div className="text-sm font-medium text-green-500 mt-1">
+                              (前回:{" "}
+                              {
+                                comparisonData.find((q) => q.id === question.id)
+                                  ?.maxScore
+                              }
+                              )
+                            </div>
+                          )}
                         </div>
                         <div className="p-3 rounded-lg bg-red-50">
                           <div className="text-xs text-gray-600 mb-1">
@@ -312,6 +456,18 @@ const QuestionReport: React.FC = () => {
                           <div className="text-lg font-bold text-red-600">
                             {question.minScore}
                           </div>
+                          {comparisonData?.find(
+                            (q) => q.id === question.id
+                          ) && (
+                            <div className="text-sm font-medium text-red-500 mt-1">
+                              (前回:{" "}
+                              {
+                                comparisonData.find((q) => q.id === question.id)
+                                  ?.minScore
+                              }
+                              )
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

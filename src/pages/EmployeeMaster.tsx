@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useCustomer } from "../context/CustomerContext";
 import { useAuth } from "../context/AuthContext";
+import { useDepartment } from "../context/DepartmentContext";
 import CustomerSelector from "../components/CustomerSelector";
 
 // LocalStorageのキー
@@ -188,6 +189,7 @@ interface Employee {
 const EmployeeMaster = () => {
   const { user } = useAuth(); // AuthContextからユーザー情報を取得
   const { selectedCustomerId } = useCustomer();
+  const { departments } = useDepartment();
 
   // 選択された顧客に応じた従業員データを取得
   const getEmployeesForCustomer = (customerId: string): Employee[] => {
@@ -280,7 +282,7 @@ const EmployeeMaster = () => {
         !newEmployee.employee_name ||
         !newEmployee.department
       ) {
-        throw new Error("メールアドレス、氏名、部署は必須項目です");
+        throw new Error("メールアドレス、氏名、部門は必須項目です");
       }
 
       // メールアドレスの重複チェック
@@ -420,7 +422,7 @@ const EmployeeMaster = () => {
         !editEmployee.employee_name ||
         !editEmployee.department
       ) {
-        throw new Error("メールアドレス、氏名、部署は必須項目です");
+        throw new Error("メールアドレス、氏名、部門は必須項目です");
       }
 
       // メールアドレスの重複チェック（自分以外）
@@ -795,7 +797,7 @@ const EmployeeMaster = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-gray-600">
-                        部署
+                        部門
                       </label>
                       <p className="text-gray-900 font-medium">
                         {selectedEmployee.department}
@@ -1003,17 +1005,23 @@ const EmployeeMaster = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    部署 <span className="text-red-500">*</span>
+                    部門 <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={newEmployee.department}
                     onChange={(e) =>
                       handleInputChange("department", e.target.value)
                     }
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
-                  />
+                  >
+                    <option value="">選択してください</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -1230,10 +1238,9 @@ const EmployeeMaster = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    部署 <span className="text-red-500">*</span>
+                    部門 <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={editEmployee.department}
                     onChange={(e) =>
                       setEditEmployee((prev) => ({
@@ -1243,7 +1250,14 @@ const EmployeeMaster = () => {
                     }
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
-                  />
+                  >
+                    <option value="">選択してください</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

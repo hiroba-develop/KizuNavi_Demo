@@ -1,10 +1,15 @@
-import React from "react";
 import { THEME_COLORS } from "../types";
 import { useCustomer } from "../context/CustomerContext";
 import CustomerSelector from "../components/CustomerSelector";
 
-const SummaryReport: React.FC = () => {
-  const { selectedPeriod, selectedCustomerId } = useCustomer();
+interface MetricsData {
+  name: string;
+  score: number;
+  positiveRate: number;
+}
+
+const SummaryReport = () => {
+  const { selectedPeriod, selectedCustomerId, periods } = useCustomer();
 
   // ベースデータ（顧客・期間によって調整される）
   const baseData = {
@@ -106,7 +111,85 @@ const SummaryReport: React.FC = () => {
 
   const currentData = getCurrentData();
 
-  const metricsData = [
+  // 最新の実施日を選択している場合のみ、前回のデータを比較用に取得
+  const getComparisonData = () => {
+    if (selectedPeriod === periods[0].value && periods.length > 1) {
+      const { customerMultiplier } = getMultipliers();
+      const previousPeriodMultiplier = 0.95;
+
+      return {
+        kizunaScore: {
+          score:
+            Math.round(
+              baseData.kizunaScore.score *
+                customerMultiplier *
+                previousPeriodMultiplier *
+                10
+            ) / 10,
+          positiveRate:
+            Math.round(
+              baseData.kizunaScore.positiveRate *
+                customerMultiplier *
+                previousPeriodMultiplier *
+                10
+            ) / 10,
+        },
+        engagementScore: {
+          score:
+            Math.round(
+              baseData.engagementScore.score *
+                customerMultiplier *
+                previousPeriodMultiplier *
+                10
+            ) / 10,
+          positiveRate:
+            Math.round(
+              baseData.engagementScore.positiveRate *
+                customerMultiplier *
+                previousPeriodMultiplier *
+                10
+            ) / 10,
+        },
+        satisfactionScore: {
+          score:
+            Math.round(
+              baseData.satisfactionScore.score *
+                customerMultiplier *
+                previousPeriodMultiplier *
+                10
+            ) / 10,
+          positiveRate:
+            Math.round(
+              baseData.satisfactionScore.positiveRate *
+                customerMultiplier *
+                previousPeriodMultiplier *
+                10
+            ) / 10,
+        },
+        humanCapitalScore: {
+          score:
+            Math.round(
+              baseData.humanCapitalScore.score *
+                customerMultiplier *
+                previousPeriodMultiplier *
+                10
+            ) / 10,
+          positiveRate:
+            Math.round(
+              baseData.humanCapitalScore.positiveRate *
+                customerMultiplier *
+                previousPeriodMultiplier *
+                10
+            ) / 10,
+        },
+      };
+    }
+    return undefined;
+  };
+
+  const comparisonData = getComparisonData();
+
+  const metricsData: MetricsData[] = [
     {
       name: "キズナ度",
       score: currentData.kizunaScore.score,
@@ -129,11 +212,38 @@ const SummaryReport: React.FC = () => {
     },
   ];
 
+  const comparisonMetricsData = comparisonData
+    ? [
+        {
+          name: "キズナ度",
+          score: comparisonData.kizunaScore.score,
+          positiveRate: comparisonData.kizunaScore.positiveRate,
+        },
+        {
+          name: "エンゲージメントスコア",
+          score: comparisonData.engagementScore.score,
+          positiveRate: comparisonData.engagementScore.positiveRate,
+        },
+        {
+          name: "従業員満足度スコア",
+          score: comparisonData.satisfactionScore.score,
+          positiveRate: comparisonData.satisfactionScore.positiveRate,
+        },
+        {
+          name: "人的資本スコア",
+          score: comparisonData.humanCapitalScore.score,
+          positiveRate: comparisonData.humanCapitalScore.positiveRate,
+        },
+      ]
+    : undefined;
+
   const BarChart = ({
     data,
+    comparisonData,
     title,
   }: {
-    data: typeof metricsData;
+    data: MetricsData[];
+    comparisonData?: MetricsData[];
     title: string;
   }) => {
     const width = 500;
@@ -193,24 +303,74 @@ const SummaryReport: React.FC = () => {
 
                 return (
                   <g key={index}>
-                    <rect
-                      x={x}
-                      y={y}
-                      width={barWidth}
-                      height={barHeight}
-                      fill="#2C9AEF"
-                      rx="2"
-                      className="hover:opacity-80 cursor-pointer"
-                    ></rect>
-                    {/* Value label on top of bar */}
+                    <g>
+                      {/* メインデータのバー */}
+                      <rect
+                        x={x}
+                        y={y}
+                        width={barWidth * 0.45}
+                        height={barHeight}
+                        fill={THEME_COLORS.accent}
+                        rx="2"
+                        className="hover:opacity-80 cursor-pointer"
+                      >
+                        <title>{`${item.name}: ${item.score.toFixed(
+                          1
+                        )}`}</title>
+                      </rect>
+                      {/* 比較データのバー */}
+                      {selectedPeriod === periods[0].value &&
+                        periods.length > 1 &&
+                        comparisonData && (
+                          <rect
+                            x={x + barWidth * 0.55}
+                            y={
+                              padding +
+                              chartHeight -
+                              (comparisonData[index].score / maxValue) *
+                                chartHeight
+                            }
+                            width={barWidth * 0.45}
+                            height={
+                              (comparisonData[index].score / maxValue) *
+                              chartHeight
+                            }
+                            fill={THEME_COLORS.border}
+                            rx="2"
+                            className="hover:opacity-80 cursor-pointer"
+                          >
+                            <title>{`${item.name} (比較): ${comparisonData[
+                              index
+                            ].score.toFixed(1)}`}</title>
+                          </rect>
+                        )}
+                    </g>
+                    {/* 現在のスコア表示 */}
                     <text
-                      x={x + barWidth / 2}
+                      x={x + barWidth * 0.225}
                       y={y - 5}
                       textAnchor="middle"
                       className="text-xs font-medium fill-gray-700"
                     >
                       {item.score.toFixed(1)}
                     </text>
+                    {/* 比較スコア表示 */}
+                    {comparisonData && (
+                      <text
+                        x={x + barWidth * 0.775}
+                        y={
+                          padding +
+                          chartHeight -
+                          (comparisonData[index].score / maxValue) *
+                            chartHeight -
+                          5
+                        }
+                        textAnchor="middle"
+                        className="text-xs font-medium fill-gray-500"
+                      >
+                        {comparisonData[index].score.toFixed(1)}
+                      </text>
+                    )}
                     {/* X軸ラベル - 改行対応 */}
                     <text
                       x={x + barWidth / 2}
@@ -219,7 +379,6 @@ const SummaryReport: React.FC = () => {
                       className="text-sm fill-gray-600"
                       style={{ fontSize: "12px" }}
                     >
-                      {/* 文字列を適切な長さで改行 */}
                       {(() => {
                         const label = item.name;
                         const maxLength = 8;
@@ -228,7 +387,6 @@ const SummaryReport: React.FC = () => {
                           return <tspan>{label}</tspan>;
                         }
 
-                        // 改行処理
                         const lines = [];
                         let currentLine = "";
                         for (let i = 0; i < label.length; i++) {
@@ -242,11 +400,11 @@ const SummaryReport: React.FC = () => {
                           }
                         }
 
-                        return lines.map((line, index) => (
+                        return lines.map((line, lineIndex) => (
                           <tspan
-                            key={index}
+                            key={lineIndex}
                             x={x + barWidth / 2}
-                            dy={index === 0 ? 0 : 14}
+                            dy={lineIndex === 0 ? 0 : 14}
                           >
                             {line}
                           </tspan>
@@ -265,16 +423,18 @@ const SummaryReport: React.FC = () => {
 
   const RadarChart = ({
     data,
+    comparisonData,
     title,
   }: {
-    data: typeof metricsData;
+    data: MetricsData[];
+    comparisonData?: MetricsData[];
     title: string;
   }) => {
-    const size = 450; // SVGサイズを拡大
+    const size = 450;
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = 140; // カテゴリ別レポートと同じサイズ
-    const maxValue = 100; // ポジティブ割合なので100%まで
+    const radius = 140;
+    const maxValue = 100;
 
     const angleStep = (2 * Math.PI) / data.length;
 
@@ -301,8 +461,6 @@ const SummaryReport: React.FC = () => {
         <h3 className="text-lg font-semibold text-gray-900 mb-6">{title}</h3>
         <div className="flex justify-center w-full">
           <div className="w-full max-w-md">
-            {" "}
-            {/* カテゴリ別レポートと同じmax-w-md */}
             <svg
               width="100%"
               height="450"
@@ -341,29 +499,72 @@ const SummaryReport: React.FC = () => {
                 );
               })}
 
-              {/* Data area */}
+              {/* 比較データのエリア（後ろに表示） */}
+              {comparisonData && (
+                <>
+                  <path
+                    d={
+                      comparisonData
+                        .map((item, index) => {
+                          const angle = index * angleStep - Math.PI / 2;
+                          const value = item.positiveRate / maxValue;
+                          const x = centerX + Math.cos(angle) * radius * value;
+                          const y = centerY + Math.sin(angle) * radius * value;
+                          return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+                        })
+                        .join(" ") + " Z"
+                    }
+                    fill="#E5E7EB"
+                    fillOpacity="0.3"
+                    stroke="#9CA3AF"
+                    strokeWidth="1.5"
+                    strokeDasharray="6 4"
+                  />
+                  {/* 比較データのポイント */}
+                  {comparisonData.map((item, index) => {
+                    const angle = index * angleStep - Math.PI / 2;
+                    const value = item.positiveRate / maxValue;
+                    const x = centerX + Math.cos(angle) * radius * value;
+                    const y = centerY + Math.sin(angle) * radius * value;
+                    return (
+                      <circle
+                        key={`comparison-point-${index}`}
+                        cx={x}
+                        cy={y}
+                        r="4"
+                        fill="#9CA3AF"
+                        stroke="white"
+                        strokeWidth="1"
+                      />
+                    );
+                  })}
+                </>
+              )}
+
+              {/* メインデータのエリア */}
               <path
                 d={pathData}
                 fill="#71D3D8"
-                fillOpacity="0.3"
+                fillOpacity="0.4"
                 stroke="#71D3D8"
                 strokeWidth="2"
               />
-
-              {/* Data points */}
+              {/* メインデータのポイント */}
               {points.map((point, index) => (
                 <circle
-                  key={index}
+                  key={`main-point-${index}`}
                   cx={point.x}
                   cy={point.y}
                   r="4"
                   fill="#71D3D8"
+                  stroke="white"
+                  strokeWidth="1"
                 />
               ))}
 
               {/* ラベル - 改行対応 スマホサイズ対応 */}
               {points.map((point, index) => {
-                const labelRadius = radius + 60; // カテゴリ別レポートと同じ距離
+                const labelRadius = radius + 60;
                 const angle = index * angleStep - Math.PI / 2;
                 const labelX = centerX + Math.cos(angle) * labelRadius;
                 const labelY = centerY + Math.sin(angle) * labelRadius;
@@ -376,12 +577,11 @@ const SummaryReport: React.FC = () => {
                     textAnchor="middle"
                     dominantBaseline="middle"
                     className="text-sm font-medium fill-gray-600"
-                    style={{ fontSize: "11px" }} // カテゴリ別レポートと同じフォントサイズ
+                    style={{ fontSize: "11px" }}
                   >
-                    {/* 項目名を改行対応で表示 */}
                     {(() => {
                       const label = point.label;
-                      const maxLength = 8; // カテゴリ別レポートと同じ最大文字数
+                      const maxLength = 8;
 
                       if (label.length <= maxLength) {
                         return (
@@ -401,7 +601,6 @@ const SummaryReport: React.FC = () => {
                         );
                       }
 
-                      // 改行処理 - スマホサイズ対応
                       const lines = [];
                       let currentLine = "";
                       for (let i = 0; i < label.length; i++) {
@@ -421,7 +620,7 @@ const SummaryReport: React.FC = () => {
                             <tspan
                               key={lineIndex}
                               x={labelX}
-                              dy={lineIndex === 0 ? "-0.7em" : "1.2em"} // カテゴリ別レポートと同じ行間
+                              dy={lineIndex === 0 ? "-0.7em" : "1.2em"}
                             >
                               {line}
                             </tspan>
@@ -448,7 +647,7 @@ const SummaryReport: React.FC = () => {
                   x={centerX + 5}
                   y={centerY - (radius * percentage) / 100}
                   className="text-xs fill-gray-400"
-                  style={{ fontSize: "8px" }} // フォントサイズを小さく
+                  style={{ fontSize: "8px" }}
                 >
                   {percentage}%
                 </text>
@@ -460,76 +659,190 @@ const SummaryReport: React.FC = () => {
     );
   };
 
-  const DataTable = ({ data }: { data: typeof metricsData }) => (
-    <div
-      className="bg-white rounded-lg shadow-sm border overflow-x-auto"
-      style={{ borderColor: THEME_COLORS.border }}
-    >
-      <div className="p-4 sm:p-6 xl:p-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-          <h2 className="text-xl xl:text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
-            指標別データ
-          </h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr
-                className="border-b"
-                style={{ borderColor: THEME_COLORS.border }}
-              >
-                <th className="py-3 px-4 font-medium text-gray-900 text-base">
-                  指標
-                </th>
-                {data.map((metric) => (
-                  <th
-                    key={metric.name}
-                    className="text-center py-3 px-2 font-medium text-gray-900 min-w-[120px]"
-                  >
-                    <div className="text-sm lg:text-base whitespace-nowrap">
-                      <span>{metric.name}</span>
-                    </div>
+  const DataTable = ({
+    data,
+    comparisonData,
+  }: {
+    data: MetricsData[];
+    comparisonData?: MetricsData[];
+  }) => {
+    const currentMaxScore = Math.max(...data.map((item) => item.score));
+    const currentMinScore = Math.min(...data.map((item) => item.score));
+
+    const comparisonMaxScore = comparisonData
+      ? Math.max(...comparisonData.map((item) => item.score))
+      : null;
+    const comparisonMinScore = comparisonData
+      ? Math.min(...comparisonData.map((item) => item.score))
+      : null;
+
+    const ScoreIcon = ({
+      score,
+      isComparison = false,
+    }: {
+      score: number;
+      isComparison?: boolean;
+    }) => {
+      const maxScore = isComparison ? comparisonMaxScore : currentMaxScore;
+      const minScore = isComparison ? comparisonMinScore : currentMinScore;
+
+      if (score === maxScore) {
+        return (
+          <svg
+            className="w-5 h-5 text-yellow-500 mr-1"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <title>
+              {isComparison ? "比較データの最高スコア" : "最高スコア"}
+            </title>
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        );
+      } else if (score === minScore) {
+        return (
+          <svg
+            className="w-5 h-5 text-red-500 mr-1"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <title>
+              {isComparison ? "比較データの最低スコア" : "最低スコア"}
+            </title>
+            <path d="M10 15 L5 5 L15 5 Z" />
+          </svg>
+        );
+      }
+      return null;
+    };
+
+    return (
+      <div
+        className="bg-white rounded-lg shadow-sm border overflow-x-auto"
+        style={{ borderColor: THEME_COLORS.border }}
+      >
+        <div className="p-4 sm:p-6 xl:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+            <h2 className="text-xl xl:text-2xl font-semibold text-gray-900 mb-2 sm:mb-0">
+              指標別データ
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr
+                  className="border-b"
+                  style={{ borderColor: THEME_COLORS.border }}
+                >
+                  <th className="py-3 px-4 font-medium text-gray-900 text-base">
+                    指標
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                className="border-b"
-                style={{ borderColor: THEME_COLORS.border }}
-              >
-                <td className="py-3 px-4 font-medium text-gray-700 text-base">
-                  スコア
-                </td>
-                {data.map((metric) => (
-                  <td key={metric.name} className="text-center py-3 px-2">
-                    <span className="font-semibold text-blue-600 text-lg">
-                      {metric.score.toFixed(1)}
-                    </span>
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-medium text-gray-700 text-base">
-                  ポジティブ割合
-                </td>
-                {data.map((metric) => (
-                  <td key={metric.name} className="text-center py-3 px-2">
-                    <span
-                      className="font-semibold text-lg"
-                      style={{ color: "#71D3D8" }}
+                  {data.map((metric) => (
+                    <th
+                      key={metric.name}
+                      className="text-center py-3 px-2 font-medium text-gray-900 min-w-[120px]"
                     >
-                      {metric.positiveRate.toFixed(1)}%
-                    </span>
+                      <div className="text-sm lg:text-base whitespace-nowrap">
+                        <span>{metric.name}</span>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  className="border-b"
+                  style={{ borderColor: THEME_COLORS.border }}
+                >
+                  <td className="py-3 px-4 font-medium text-gray-700 text-base">
+                    スコア
                   </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
+                  {data.map((metric) => (
+                    <td key={metric.name} className="text-center py-3 px-2">
+                      <div className="flex items-center justify-center">
+                        <ScoreIcon score={metric.score} />
+                        <span
+                          className={`font-semibold ${
+                            metric.score === currentMaxScore
+                              ? "text-yellow-600"
+                              : metric.score === currentMinScore
+                              ? "text-red-600"
+                              : "text-blue-600"
+                          } text-lg`}
+                        >
+                          {metric.score.toFixed(1)}
+                        </span>
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+                {comparisonData && (
+                  <tr
+                    className="border-b"
+                    style={{ borderColor: THEME_COLORS.border }}
+                  >
+                    <td className="py-3 px-4 font-medium text-gray-700 text-base">
+                      比較対象のスコア
+                    </td>
+                    {comparisonData.map((metric) => (
+                      <td key={metric.name} className="text-center py-3 px-2">
+                        <div className="flex items-center justify-center">
+                          <ScoreIcon score={metric.score} isComparison={true} />
+                          <span
+                            className={`font-semibold ${
+                              metric.score === comparisonMaxScore
+                                ? "text-yellow-600"
+                                : metric.score === comparisonMinScore
+                                ? "text-red-600"
+                                : "text-gray-600"
+                            } text-lg`}
+                          >
+                            {metric.score.toFixed(1)}
+                          </span>
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                )}
+                <tr>
+                  <td className="py-3 px-4 font-medium text-gray-700 text-base">
+                    ポジティブ割合
+                  </td>
+                  {data.map((metric) => (
+                    <td key={metric.name} className="text-center py-3 px-2">
+                      <span
+                        className="font-semibold text-lg"
+                        style={{ color: "#71D3D8" }}
+                      >
+                        {metric.positiveRate.toFixed(1)}%
+                      </span>
+                    </td>
+                  ))}
+                </tr>
+                {comparisonData && (
+                  <tr>
+                    <td className="py-3 px-4 font-medium text-gray-700 text-base">
+                      比較対象のポジティブ割合
+                    </td>
+                    {comparisonData.map((metric) => (
+                      <td key={metric.name} className="text-center py-3 px-2">
+                        <span
+                          className="font-semibold text-lg"
+                          style={{ color: "#9CA3AF" }}
+                        >
+                          {metric.positiveRate.toFixed(1)}%
+                        </span>
+                      </td>
+                    ))}
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -542,12 +855,20 @@ const SummaryReport: React.FC = () => {
       </div>
 
       {/* Data Table - 1段目 */}
-      <DataTable data={metricsData} />
+      <DataTable data={metricsData} comparisonData={comparisonMetricsData} />
 
       {/* Charts Grid - 2段目 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
-        <BarChart data={metricsData} title="スコア" />
-        <RadarChart data={metricsData} title="ポジティブ割合" />
+        <BarChart
+          data={metricsData}
+          comparisonData={comparisonMetricsData}
+          title="スコア"
+        />
+        <RadarChart
+          data={metricsData}
+          comparisonData={comparisonMetricsData}
+          title="ポジティブ割合"
+        />
       </div>
     </div>
   );

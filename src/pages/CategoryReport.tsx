@@ -4,7 +4,7 @@ import { useCustomer } from "../context/CustomerContext";
 import CustomerSelector from "../components/CustomerSelector";
 
 const CategoryReport: React.FC = () => {
-  const { selectedPeriod, selectedCustomerId } = useCustomer();
+  const { selectedPeriod, selectedCustomerId, periods } = useCustomer();
   const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
@@ -58,11 +58,37 @@ const CategoryReport: React.FC = () => {
       ) / 10,
   }));
 
+  // 最新の実施日を選択している場合のみ、前回のデータを比較用に取得
+  const getComparisonData = () => {
+    if (selectedPeriod === periods[0].value && periods.length > 1) {
+      const previousPeriodMultiplier = 0.95;
+      return baseData.map((item) => ({
+        ...item,
+        score:
+          Math.round(
+            item.score * customerMultiplier * previousPeriodMultiplier * 10
+          ) / 10,
+        positiveRate:
+          Math.round(
+            item.positiveRate *
+              customerMultiplier *
+              previousPeriodMultiplier *
+              10
+          ) / 10,
+      }));
+    }
+    return undefined;
+  };
+
+  const comparisonData = getComparisonData();
+
   const BarChart = ({
     data,
+    comparisonData,
     title,
   }: {
     data: typeof currentData;
+    comparisonData?: typeof currentData;
     title: string;
   }) => {
     // 画面サイズに応じてグラフのサイズと余白を設定
@@ -136,24 +162,74 @@ const CategoryReport: React.FC = () => {
 
                 return (
                   <g key={index}>
-                    <rect
-                      x={x}
-                      y={y}
-                      width={barWidth}
-                      height={barHeight}
-                      fill="#2C9AEF"
-                      rx="2"
-                      className="hover:opacity-80 cursor-pointer"
-                    ></rect>
-                    {/* Value label on top of bar */}
+                    <g>
+                      {/* メインデータのバー */}
+                      <rect
+                        x={x}
+                        y={y}
+                        width={barWidth * 0.45}
+                        height={barHeight}
+                        fill={THEME_COLORS.accent}
+                        rx="2"
+                        className="hover:opacity-80 cursor-pointer"
+                      >
+                        <title>{`${item.name}: ${item.score.toFixed(
+                          1
+                        )}`}</title>
+                      </rect>
+                      {/* 比較データのバー */}
+                      {selectedPeriod === periods[0].value &&
+                        periods.length > 1 &&
+                        comparisonData && (
+                          <rect
+                            x={x + barWidth * 0.55}
+                            y={
+                              padding.top +
+                              chartHeight -
+                              (comparisonData[index].score / maxValue) *
+                                chartHeight
+                            }
+                            width={barWidth * 0.45}
+                            height={
+                              (comparisonData[index].score / maxValue) *
+                              chartHeight
+                            }
+                            fill={THEME_COLORS.border}
+                            rx="2"
+                            className="hover:opacity-80 cursor-pointer"
+                          >
+                            <title>{`${item.name} (比較): ${comparisonData[
+                              index
+                            ].score.toFixed(1)}`}</title>
+                          </rect>
+                        )}
+                    </g>
+                    {/* 現在のスコア表示 */}
                     <text
-                      x={x + barWidth / 2}
+                      x={x + barWidth * 0.225}
                       y={y - 5}
                       textAnchor="middle"
                       className="text-xs font-medium fill-gray-700"
                     >
                       {item.score.toFixed(1)}
                     </text>
+                    {/* 比較スコア表示 */}
+                    {comparisonData && (
+                      <text
+                        x={x + barWidth * 0.775}
+                        y={
+                          padding.top +
+                          chartHeight -
+                          (comparisonData[index].score / maxValue) *
+                            chartHeight -
+                          5
+                        }
+                        textAnchor="middle"
+                        className="text-xs font-medium fill-gray-500"
+                      >
+                        {comparisonData[index].score.toFixed(1)}
+                      </text>
+                    )}
                     {/* X軸ラベル - 改行対応 */}
                     <foreignObject
                       x={x - (isMobile ? barWidth * 1.2 : barWidth * 0.8)}
@@ -185,9 +261,11 @@ const CategoryReport: React.FC = () => {
 
   const RadarChart = ({
     data,
+    comparisonData,
     title,
   }: {
     data: typeof currentData;
+    comparisonData?: typeof currentData;
     title: string;
   }) => {
     const size = 450;
@@ -259,23 +337,66 @@ const CategoryReport: React.FC = () => {
                 );
               })}
 
-              {/* Data area */}
+              {/* 比較データのエリア（後ろに表示） */}
+              {comparisonData && (
+                <>
+                  <path
+                    d={
+                      comparisonData
+                        .map((item, index) => {
+                          const angle = index * angleStep - Math.PI / 2;
+                          const value = item.positiveRate / maxValue;
+                          const x = centerX + Math.cos(angle) * radius * value;
+                          const y = centerY + Math.sin(angle) * radius * value;
+                          return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+                        })
+                        .join(" ") + " Z"
+                    }
+                    fill="#E5E7EB"
+                    fillOpacity="0.3"
+                    stroke="#9CA3AF"
+                    strokeWidth="1.5"
+                    strokeDasharray="6 4"
+                  />
+                  {/* 比較データのポイント */}
+                  {comparisonData.map((item, index) => {
+                    const angle = index * angleStep - Math.PI / 2;
+                    const value = item.positiveRate / maxValue;
+                    const x = centerX + Math.cos(angle) * radius * value;
+                    const y = centerY + Math.sin(angle) * radius * value;
+                    return (
+                      <circle
+                        key={`comparison-point-${index}`}
+                        cx={x}
+                        cy={y}
+                        r="4"
+                        fill="#9CA3AF"
+                        stroke="white"
+                        strokeWidth="1"
+                      />
+                    );
+                  })}
+                </>
+              )}
+
+              {/* メインデータのエリア */}
               <path
                 d={pathData}
                 fill="#71D3D8"
-                fillOpacity="0.3"
+                fillOpacity="0.4"
                 stroke="#71D3D8"
                 strokeWidth="2"
               />
-
-              {/* Data points */}
+              {/* メインデータのポイント */}
               {points.map((point, index) => (
                 <circle
-                  key={index}
+                  key={`main-point-${index}`}
                   cx={point.x}
                   cy={point.y}
                   r="4"
                   fill="#71D3D8"
+                  stroke="white"
+                  strokeWidth="1"
                 />
               ))}
 
@@ -429,14 +550,107 @@ const CategoryReport: React.FC = () => {
                   <td className="py-3 px-4 font-medium text-gray-700 whitespace-nowrap">
                     スコア
                   </td>
-                  {currentData.map((item) => (
-                    <td key={item.name} className="text-center py-3 px-2">
-                      <span className="font-semibold text-blue-600">
-                        {item.score.toFixed(1)}
-                      </span>
-                    </td>
-                  ))}
+                  {currentData.map((item) => {
+                    const currentMaxScore = Math.max(
+                      ...currentData.map((item) => item.score)
+                    );
+                    const currentMinScore = Math.min(
+                      ...currentData.map((item) => item.score)
+                    );
+                    return (
+                      <td key={item.name} className="text-center py-3 px-2">
+                        <div className="flex items-center justify-center">
+                          {item.score === currentMaxScore && (
+                            <svg
+                              className="w-5 h-5 text-yellow-500 mr-1"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <title>最高スコア</title>
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          )}
+                          {item.score === currentMinScore && (
+                            <svg
+                              className="w-5 h-5 text-red-500 mr-1"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <title>最低スコア</title>
+                              <path d="M10 15 L5 5 L15 5 Z" />
+                            </svg>
+                          )}
+                          <span
+                            className={`font-semibold ${
+                              item.score === currentMaxScore
+                                ? "text-yellow-600"
+                                : item.score === currentMinScore
+                                ? "text-red-600"
+                                : "text-blue-600"
+                            }`}
+                          >
+                            {item.score.toFixed(1)}
+                          </span>
+                        </div>
+                      </td>
+                    );
+                  })}
                 </tr>
+                {comparisonData && (
+                  <tr
+                    className="border-b"
+                    style={{ borderColor: THEME_COLORS.border }}
+                  >
+                    <td className="py-3 px-4 font-medium text-gray-700 whitespace-nowrap">
+                      比較対象のスコア
+                    </td>
+                    {comparisonData.map((item) => {
+                      const comparisonMaxScore = Math.max(
+                        ...comparisonData.map((item) => item.score)
+                      );
+                      const comparisonMinScore = Math.min(
+                        ...comparisonData.map((item) => item.score)
+                      );
+                      return (
+                        <td key={item.name} className="text-center py-3 px-2">
+                          <div className="flex items-center justify-center">
+                            {item.score === comparisonMaxScore && (
+                              <svg
+                                className="w-5 h-5 text-yellow-500 mr-1"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <title>比較データの最高スコア</title>
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            )}
+                            {item.score === comparisonMinScore && (
+                              <svg
+                                className="w-5 h-5 text-red-500 mr-1"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <title>比較データの最低スコア</title>
+                                <path d="M10 15 L5 5 L15 5 Z" />
+                              </svg>
+                            )}
+                            <span
+                              className={`font-semibold ${
+                                item.score === comparisonMaxScore
+                                  ? "text-yellow-600"
+                                  : item.score === comparisonMinScore
+                                  ? "text-red-600"
+                                  : "text-gray-600"
+                              }`}
+                            >
+                              {item.score.toFixed(1)}
+                            </span>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                )}
                 <tr>
                   <td className="py-3 px-4 font-medium text-gray-700 whitespace-nowrap">
                     ポジティブ割合
@@ -452,6 +666,23 @@ const CategoryReport: React.FC = () => {
                     </td>
                   ))}
                 </tr>
+                {comparisonData && (
+                  <tr>
+                    <td className="py-3 px-4 font-medium text-gray-700 whitespace-nowrap">
+                      比較対象のポジティブ割合
+                    </td>
+                    {comparisonData.map((item) => (
+                      <td key={item.name} className="text-center py-3 px-2">
+                        <span
+                          className="font-semibold"
+                          style={{ color: "#9CA3AF" }}
+                        >
+                          {item.positiveRate.toFixed(1)}%
+                        </span>
+                      </td>
+                    ))}
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -460,8 +691,16 @@ const CategoryReport: React.FC = () => {
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
-        <BarChart data={currentData} title="スコア" />
-        <RadarChart data={currentData} title="ポジティブ割合" />
+        <BarChart
+          data={currentData}
+          comparisonData={comparisonData}
+          title="スコア"
+        />
+        <RadarChart
+          data={currentData}
+          comparisonData={comparisonData}
+          title="ポジティブ割合"
+        />
       </div>
     </div>
   );

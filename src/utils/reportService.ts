@@ -45,9 +45,17 @@ export interface SummaryReport {
 
 export class ReportService {
   // Dashboard data
-  static async getDashboardMetrics(companyId: string): Promise<DashboardMetrics> {
+  static async getDashboardMetrics(companyId: string, implementationDate?: string): Promise<DashboardMetrics> {
+    const params = new URLSearchParams({
+      companyId: companyId,
+    });
+
+    if (implementationDate) {
+      params.append('implementationDate', implementationDate);
+    }
+
     const response = await apiClient.get<DashboardMetrics>(
-      `/reports/dashboard?companyId=${companyId}`
+      `/reports/dashboard?${params.toString()}`
     );
     
     if (response.success && response.data) {
@@ -57,9 +65,17 @@ export class ReportService {
     throw new Error(response.message || 'ダッシュボードデータの取得に失敗しました');
   }
 
-  static async getDashboardChartData(companyId: string): Promise<ChartData> {
+  static async getDashboardChartData(companyId: string, implementationDate?: string): Promise<ChartData> {
+    const params = new URLSearchParams({
+      companyId: companyId,
+    });
+
+    if (implementationDate) {
+      params.append('implementationDate', implementationDate);
+    }
+
     const response = await apiClient.get<ChartData>(
-      `/reports/dashboard/charts?companyId=${companyId}`
+      `/reports/dashboard/charts?${params.toString()}`
     );
     
     if (response.success && response.data) {

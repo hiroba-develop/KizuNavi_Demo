@@ -131,7 +131,7 @@ const Reports: React.FC = () => {
         style={{ borderColor: THEME_COLORS.border }}
       >
         <h3 className="text-lg xl:text-xl font-semibold text-gray-900">
-          部署別分析
+          部門別分析
         </h3>
       </div>
       <div className="overflow-x-auto">
@@ -139,7 +139,7 @@ const Reports: React.FC = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 sm:px-6 xl:px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                部署
+                部門
               </th>
               <th className="px-4 sm:px-6 xl:px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Kizuna スコア

@@ -7,9 +7,11 @@ import CustomerSelector from "../components/CustomerSelector";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const { selectedCustomerId, selectedPeriod } = useCustomer();
+  const { selectedCustomerId, selectedPeriod, periods } = useCustomer();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [comparisonChartData, setComparisonChartData] =
+    useState<ChartData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
@@ -31,13 +33,27 @@ const Dashboard: React.FC = () => {
         setIsLoading(true);
         setError("");
 
+        // 現在の期間のデータを取得
         const [metricsData, chartsData] = await Promise.all([
-          ReportService.getDashboardMetrics(user.companyId),
-          ReportService.getDashboardChartData(user.companyId),
+          ReportService.getDashboardMetrics(user.companyId, selectedPeriod),
+          ReportService.getDashboardChartData(user.companyId, selectedPeriod),
         ]);
 
         setMetrics(metricsData);
         setChartData(chartsData);
+
+        // 最新の実施日を選択している場合のみ、前回のデータを比較用に取得
+        if (selectedPeriod === periods[0].value && periods.length > 1) {
+          const previousPeriod = periods[1].value;
+          const [, comparisonChartsData] = await Promise.all([
+            ReportService.getDashboardMetrics(user.companyId, previousPeriod),
+            ReportService.getDashboardChartData(user.companyId, previousPeriod),
+          ]);
+
+          setComparisonChartData(comparisonChartsData);
+        } else {
+          setComparisonChartData(null);
+        }
       } catch (err) {
         console.error("Dashboard data fetch error:", err);
 
@@ -241,6 +257,65 @@ const Dashboard: React.FC = () => {
         setMetrics(fallbackMetrics);
         setChartData(fallbackChartData);
 
+        // 最新の実施日を選択している場合のみ、前回のデータを比較用に取得
+        if (selectedPeriod === periods[0].value && periods.length > 1) {
+          const previousPeriodMultiplier = 0.95;
+
+          const fallbackComparisonChartData = {
+            departmentKizuna: baseDepartmentData.map((item) => ({
+              ...item,
+              score:
+                Math.round(
+                  item.score *
+                    customerMultiplier *
+                    previousPeriodMultiplier *
+                    10
+                ) / 10,
+            })),
+            categoryKizuna: baseCategoryData.map((item) => ({
+              ...item,
+              score:
+                Math.round(
+                  item.score *
+                    customerMultiplier *
+                    previousPeriodMultiplier *
+                    10
+                ) / 10,
+              positiveRate:
+                Math.round(
+                  item.positiveRate *
+                    customerMultiplier *
+                    previousPeriodMultiplier *
+                    10
+                ) / 10,
+            })),
+            generationKizuna: baseGenerationData.map((item) => ({
+              ...item,
+              score:
+                Math.round(
+                  item.score *
+                    customerMultiplier *
+                    previousPeriodMultiplier *
+                    10
+                ) / 10,
+            })),
+            tenureKizuna: baseTenureData.map((item) => ({
+              ...item,
+              score:
+                Math.round(
+                  item.score *
+                    customerMultiplier *
+                    previousPeriodMultiplier *
+                    10
+                ) / 10,
+            })),
+          };
+
+          setComparisonChartData(fallbackComparisonChartData);
+        } else {
+          setComparisonChartData(null);
+        }
+
         // エラーメッセージは設定するが、画面は表示し続ける
         setError(
           err instanceof Error
@@ -253,7 +328,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchDashboardData();
-  }, [user?.companyId, selectedPeriod, selectedCustomerId]);
+  }, [user?.companyId, selectedPeriod, selectedCustomerId].filter(Boolean));
 
   const CircularProgress = ({
     percentage,
@@ -335,7 +410,16 @@ const Dashboard: React.FC = () => {
     );
   };
 
-  const BarChart = ({ data, title }: { data: any[]; title: string }) => {
+  const BarChart = ({
+    data,
+    comparisonData,
+    title,
+  }: {
+    data: any[];
+    comparisonData?: any[];
+    title: string;
+  }) => {
+    console.log("BarChart rendering with:", { data, comparisonData, title });
     const maxValue = 6;
 
     return (
@@ -400,25 +484,74 @@ const Dashboard: React.FC = () => {
 
                     return (
                       <g key={index}>
-                        <rect
-                          x={x}
-                          y={y}
-                          width={barWidth}
-                          height={barHeight}
-                          fill={THEME_COLORS.accent}
-                          rx="2"
-                          className="hover:opacity-80 cursor-pointer"
-                        >
-                          {/* <title>{`${label}: ${item.score.toFixed(1)}`}</title> */}
-                        </rect>
+                        <g>
+                          {/* メインデータのバー */}
+                          <rect
+                            x={x}
+                            y={y}
+                            width={barWidth * 0.45}
+                            height={barHeight}
+                            fill={THEME_COLORS.accent}
+                            rx="2"
+                            className="hover:opacity-80 cursor-pointer"
+                          >
+                            <title>{`${label}: ${item.score.toFixed(
+                              1
+                            )}`}</title>
+                          </rect>
+                          {/* 比較データのバー */}
+                          {selectedPeriod === periods[0].value &&
+                            periods.length > 1 &&
+                            comparisonData && (
+                              <rect
+                                x={x + barWidth * 0.55}
+                                y={
+                                  padding.top +
+                                  chartHeight -
+                                  (comparisonData[index].score / maxValue) *
+                                    chartHeight
+                                }
+                                width={barWidth * 0.45}
+                                height={
+                                  (comparisonData[index].score / maxValue) *
+                                  chartHeight
+                                }
+                                fill={THEME_COLORS.border}
+                                rx="2"
+                                className="hover:opacity-80 cursor-pointer"
+                              >
+                                <title>{`${label} (比較): ${comparisonData[
+                                  index
+                                ].score.toFixed(1)}`}</title>
+                              </rect>
+                            )}
+                        </g>
+                        {/* 現在のスコア表示 */}
                         <text
-                          x={x + barWidth / 2}
+                          x={x + barWidth * 0.225}
                           y={y - 5}
                           textAnchor="middle"
                           className="text-base font-medium fill-gray-700"
                         >
                           {item.score.toFixed(1)}
                         </text>
+                        {/* 比較スコア表示 */}
+                        {comparisonData && (
+                          <text
+                            x={x + barWidth * 0.775}
+                            y={
+                              padding.top +
+                              chartHeight -
+                              (comparisonData[index].score / maxValue) *
+                                chartHeight -
+                              5
+                            }
+                            textAnchor="middle"
+                            className="text-base font-medium fill-gray-500"
+                          >
+                            {comparisonData[index].score.toFixed(1)}
+                          </text>
+                        )}
                         <foreignObject
                           x={x - barWidth * 0.2}
                           y={padding.top + chartHeight + 5}
@@ -444,7 +577,15 @@ const Dashboard: React.FC = () => {
     );
   };
 
-  const RadarChart = ({ data, title }: { data: any[]; title: string }) => {
+  const RadarChart = ({
+    data,
+    comparisonData,
+    title,
+  }: {
+    data: any[];
+    comparisonData?: any[];
+    title: string;
+  }) => {
     const maxValue = 6;
 
     return (
@@ -523,14 +664,70 @@ const Dashboard: React.FC = () => {
                     );
                   })}
 
-                  {/* Data area */}
+                  {/* 比較データのエリア（後ろに表示） */}
+                  {comparisonData && (
+                    <>
+                      <path
+                        d={
+                          comparisonData
+                            .map((item, index) => {
+                              const angle = index * angleStep - Math.PI / 2;
+                              const value = item.score / maxValue;
+                              const x =
+                                centerX + Math.cos(angle) * radius * value;
+                              const y =
+                                centerY + Math.sin(angle) * radius * value;
+                              return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+                            })
+                            .join(" ") + " Z"
+                        }
+                        fill="#E5E7EB"
+                        fillOpacity="0.3"
+                        stroke="#9CA3AF"
+                        strokeWidth="1.5"
+                        strokeDasharray="6 4"
+                      />
+                      {/* 比較データのポイント */}
+                      {comparisonData.map((item, index) => {
+                        const angle = index * angleStep - Math.PI / 2;
+                        const value = item.score / maxValue;
+                        const x = centerX + Math.cos(angle) * radius * value;
+                        const y = centerY + Math.sin(angle) * radius * value;
+                        return (
+                          <circle
+                            key={`comparison-point-${index}`}
+                            cx={x}
+                            cy={y}
+                            r="4"
+                            fill="#9CA3AF"
+                            stroke="white"
+                            strokeWidth="1"
+                          />
+                        );
+                      })}
+                    </>
+                  )}
+
+                  {/* メインデータのエリア */}
                   <path
                     d={pathData}
                     fill="#71D3D8"
-                    fillOpacity="0.3"
+                    fillOpacity="0.4"
                     stroke="#71D3D8"
                     strokeWidth="2"
                   />
+                  {/* メインデータのポイント */}
+                  {points.map((point, index) => (
+                    <circle
+                      key={`main-point-${index}`}
+                      cx={point.x}
+                      cy={point.y}
+                      r="4"
+                      fill="#71D3D8"
+                      stroke="white"
+                      strokeWidth="1"
+                    />
+                  ))}
 
                   {/* Data points with values */}
                   {points.map((point, index) => (
@@ -605,7 +802,7 @@ const Dashboard: React.FC = () => {
     let icon: React.ReactNode;
 
     if (score >= 4.5) {
-      status = "良い";
+      status = "良好";
       color = THEME_COLORS.status.success;
       icon = (
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -621,7 +818,7 @@ const Dashboard: React.FC = () => {
         </svg>
       );
     } else {
-      status = "改善が必要";
+      status = "不調";
       color = THEME_COLORS.status.error;
       icon = (
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -653,13 +850,37 @@ const Dashboard: React.FC = () => {
     </div>
   );
 
-  const DataTable = ({ data }: { data: any[] }) => {
-    // 最高スコアと最低スコアを見つける
-    const maxScore = Math.max(...data.map((item) => item.score));
-    const minScore = Math.min(...data.map((item) => item.score));
+  const DataTable = ({
+    data,
+    comparisonData,
+  }: {
+    data: any[];
+    comparisonData?: any[];
+  }) => {
+    console.log("DataTable rendering with:", { data, comparisonData });
+    // 現在のデータの最高スコアと最低スコア
+    const currentMaxScore = Math.max(...data.map((item) => item.score));
+    const currentMinScore = Math.min(...data.map((item) => item.score));
+
+    // 比較データの最高スコアと最低スコア
+    const comparisonMaxScore = comparisonData
+      ? Math.max(...comparisonData.map((item) => item.score))
+      : null;
+    const comparisonMinScore = comparisonData
+      ? Math.min(...comparisonData.map((item) => item.score))
+      : null;
 
     // スコアに応じたアイコンを返す関数
-    const ScoreIcon = ({ score }: { score: number }) => {
+    const ScoreIcon = ({
+      score,
+      isComparison = false,
+    }: {
+      score: number;
+      isComparison?: boolean;
+    }) => {
+      const maxScore = isComparison ? comparisonMaxScore : currentMaxScore;
+      const minScore = isComparison ? comparisonMinScore : currentMinScore;
+
       if (score === maxScore) {
         return (
           <svg
@@ -667,7 +888,9 @@ const Dashboard: React.FC = () => {
             fill="currentColor"
             viewBox="0 0 20 20"
           >
-            <title>最高スコア</title>
+            <title>
+              {isComparison ? "比較データの最高スコア" : "最高スコア"}
+            </title>
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         );
@@ -678,7 +901,9 @@ const Dashboard: React.FC = () => {
             fill="currentColor"
             viewBox="0 0 20 20"
           >
-            <title>最低スコア</title>
+            <title>
+              {isComparison ? "比較データの最低スコア" : "最低スコア"}
+            </title>
             <path d="M10 15 L5 5 L15 5 Z" />
           </svg>
         );
@@ -747,9 +972,9 @@ const Dashboard: React.FC = () => {
                     <ScoreIcon score={item.score} />
                     <span
                       className={`font-semibold ${
-                        item.score === maxScore
+                        item.score === currentMaxScore
                           ? "text-yellow-600"
-                          : item.score === minScore
+                          : item.score === currentMinScore
                           ? "text-red-600"
                           : "text-blue-600"
                       }`}
@@ -760,6 +985,44 @@ const Dashboard: React.FC = () => {
                 </td>
               ))}
             </tr>
+            {comparisonData && (
+              <tr>
+                <td
+                  className="py-2 px-4 font-medium text-gray-700 border whitespace-nowrap"
+                  style={{
+                    borderColor: THEME_COLORS.border,
+                    minWidth: "80px",
+                  }}
+                >
+                  比較対象のスコア
+                </td>
+                {comparisonData.map((item, index) => (
+                  <td
+                    key={index}
+                    className="py-2 px-4 text-center whitespace-nowrap border"
+                    style={{
+                      borderColor: THEME_COLORS.border,
+                      minWidth: "120px",
+                    }}
+                  >
+                    <div className="flex items-center justify-center">
+                      <ScoreIcon score={item.score} isComparison={true} />
+                      <span
+                        className={`font-semibold ${
+                          item.score === comparisonMaxScore
+                            ? "text-yellow-600"
+                            : item.score === comparisonMinScore
+                            ? "text-red-600"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        {item.score.toFixed(1)}
+                      </span>
+                    </div>
+                  </td>
+                ))}
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -835,19 +1098,28 @@ const Dashboard: React.FC = () => {
             style={{ color: THEME_COLORS.accent }}
           >
             キズナ度
+            <span className="ml-2">
+              <ScoreIndicator score={metrics.kizunaScore} />
+            </span>
           </h3>
+          <p className="text-sm text-gray-600 mb-4 text-center">
+            キズナ度は、会社と従業員、従業員と従業員の心理的繫がりを測定する指標です。
+            <br />
+            スコアは0〜6の範囲で評価され、4.5以上が「良好」、3.0以上4.5未満が「普通」、
+            <br />
+            3.0未満が「不調」とされます。
+          </p>
           <div className="w-44 h-44 sm:w-72 sm:h-72">
             <CircularProgress
               percentage={(metrics.kizunaScore / 6) * 100}
               label={
-                <div className="text-center">
+                <div className="flex text-center">
                   <div
                     className="text-4xl sm:text-5xl font-bold"
                     style={{ color: THEME_COLORS.accent }}
                   >
                     {metrics.kizunaScore.toFixed(1)}
                   </div>
-                  <div className="text-lg text-gray-500">/6</div>
                 </div>
               }
               strokeWidth={36}
@@ -870,9 +1142,6 @@ const Dashboard: React.FC = () => {
                   style={{ color: THEME_COLORS.main }}
                 >
                   {metrics.engagementScore.toFixed(1)}
-                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
-                    /6
-                  </span>
                 </div>
                 <ScoreIndicator score={metrics.engagementScore} />
               </div>
@@ -887,9 +1156,6 @@ const Dashboard: React.FC = () => {
                   style={{ color: THEME_COLORS.main }}
                 >
                   {metrics.satisfactionScore.toFixed(1)}
-                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
-                    /6
-                  </span>
                 </div>
                 <ScoreIndicator score={metrics.satisfactionScore} />
               </div>
@@ -904,9 +1170,6 @@ const Dashboard: React.FC = () => {
                   style={{ color: THEME_COLORS.main }}
                 >
                   {metrics.humanCapitalScore.toFixed(1)}
-                  <span className="text-sm sm:text-lg xl:text-xl text-gray-400">
-                    /6
-                  </span>
                 </div>
                 <ScoreIndicator score={metrics.humanCapitalScore} />
               </div>
@@ -942,8 +1205,15 @@ const Dashboard: React.FC = () => {
           <h4 className="text-base sm:text-lg font-medium text-gray-700 mb-4">
             部門別キズナ度
           </h4>
-          <DataTable data={chartData.departmentKizuna} />
-          <BarChart data={chartData.departmentKizuna} title="" />
+          <DataTable
+            data={chartData.departmentKizuna}
+            comparisonData={comparisonChartData?.departmentKizuna}
+          />
+          <BarChart
+            data={chartData.departmentKizuna}
+            comparisonData={comparisonChartData?.departmentKizuna}
+            title=""
+          />
         </Card>
 
         {/* Generation Bar Chart */}
@@ -951,8 +1221,15 @@ const Dashboard: React.FC = () => {
           <h4 className="text-base sm:text-lg font-medium text-gray-700 mb-4">
             世代別キズナ度
           </h4>
-          <DataTable data={chartData.generationKizuna} />
-          <BarChart data={chartData.generationKizuna} title="" />
+          <DataTable
+            data={chartData.generationKizuna}
+            comparisonData={comparisonChartData?.generationKizuna}
+          />
+          <BarChart
+            data={chartData.generationKizuna}
+            comparisonData={comparisonChartData?.generationKizuna}
+            title=""
+          />
         </Card>
       </div>
 
@@ -963,8 +1240,15 @@ const Dashboard: React.FC = () => {
           <h4 className="text-base sm:text-lg font-medium text-gray-700 mb-4">
             カテゴリ別キズナ度
           </h4>
-          <DataTable data={chartData.categoryKizuna} />
-          <RadarChart data={chartData.categoryKizuna} title="" />
+          <DataTable
+            data={chartData.categoryKizuna}
+            comparisonData={comparisonChartData?.categoryKizuna}
+          />
+          <RadarChart
+            data={chartData.categoryKizuna}
+            comparisonData={comparisonChartData?.categoryKizuna}
+            title=""
+          />
         </Card>
 
         {/* Tenure Bar Chart */}
@@ -972,8 +1256,15 @@ const Dashboard: React.FC = () => {
           <h4 className="text-base sm:text-lg font-medium text-gray-700 mb-4">
             勤続年数別キズナ度
           </h4>
-          <DataTable data={chartData.tenureKizuna} />
-          <BarChart data={chartData.tenureKizuna} title="" />
+          <DataTable
+            data={chartData.tenureKizuna}
+            comparisonData={comparisonChartData?.tenureKizuna}
+          />
+          <BarChart
+            data={chartData.tenureKizuna}
+            comparisonData={comparisonChartData?.tenureKizuna}
+            title=""
+          />
         </Card>
       </div>
     </div>

@@ -64,23 +64,25 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
       </div>
 
       {showPeriod && (
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
-            実施日:
-          </span>
-          <select
-            value={selectedPeriod}
-            onChange={handlePeriodChange}
-            className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 max-w-[240px] sm:max-w-[180px] lg:max-w-[200px]"
-            style={{ borderColor: THEME_COLORS.border }}
-          >
-            {periods.map((period) => (
-              <option key={period.value} value={period.value}>
-                {period.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              実施日:
+            </span>
+            <select
+              value={selectedPeriod}
+              onChange={handlePeriodChange}
+              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 max-w-[240px] sm:max-w-[180px] lg:max-w-[200px]"
+              style={{ borderColor: THEME_COLORS.border }}
+            >
+              {periods.map((period) => (
+                <option key={period.value} value={period.value}>
+                  {period.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </>
       )}
     </div>
   );

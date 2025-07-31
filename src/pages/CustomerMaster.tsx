@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import type { Company } from "../types";
+import type { Company, Department } from "../types";
 import { THEME_COLORS } from "../types";
 import { useCustomer } from "../context/CustomerContext";
 import CustomerSelector from "../components/CustomerSelector";
@@ -51,12 +51,25 @@ const CustomerMaster: React.FC = () => {
     contractDate: "",
     paymentCycle: "",
     salesPersonIds: [""],
+    departments: [],
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isNewMode, setIsNewMode] = useState(false);
+  const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false);
+  const [showEditDepartmentModal, setShowEditDepartmentModal] = useState(false);
+  const [newDepartment, setNewDepartment] = useState<Department>({
+    id: "",
+    name: "",
+    description: "",
+  });
+  const [editDepartment, setEditDepartment] = useState<Department>({
+    id: "",
+    name: "",
+    description: "",
+  });
 
   // 成功メッセージを3秒後に自動消去
   useEffect(() => {
@@ -95,6 +108,7 @@ const CustomerMaster: React.FC = () => {
       contractDate: "",
       paymentCycle: "",
       salesPersonIds: [""],
+      departments: [],
     });
     setError("");
     setSuccess("");
@@ -271,8 +285,8 @@ const CustomerMaster: React.FC = () => {
       const isNewRegistration = isNewMode;
       setSuccess(
         isNewRegistration
-          ? "企業情報が正常に新規登録されました。"
-          : "企業情報が正常に保存されました。"
+          ? "企業情報（基本情報・契約情報・部門情報）が正常に新規登録されました。"
+          : "企業情報（基本情報・契約情報・部門情報）が正常に保存されました。"
       );
 
       // 永続化データも更新（既存の会社情報を更新する場合）
@@ -541,6 +555,111 @@ const CustomerMaster: React.FC = () => {
           </div>
         </div>
 
+        {/* 部門情報 */}
+        <div
+          className="bg-white rounded-lg shadow-sm p-4 sm:p-6 xl:p-8"
+          style={{ borderColor: THEME_COLORS.border, borderWidth: "1px" }}
+        >
+          <h2 className="text-lg sm:text-xl xl:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
+            部門情報
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {companyData.departments?.map((department, index) => (
+              <div
+                key={department.id}
+                className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-300 transition-colors cursor-pointer"
+                style={{ borderColor: THEME_COLORS.border }}
+                onClick={() => {
+                  if (isMaster) {
+                    setEditDepartment(department);
+                    setShowEditDepartmentModal(true);
+                  }
+                }}
+              >
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    {department.name || "（未設定）"}
+                  </h3>
+                  {department.description && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {department.description}
+                    </p>
+                  )}
+                </div>
+                {isMaster && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (
+                        window.confirm("この部門を削除してもよろしいですか？")
+                      ) {
+                        const newDepartments =
+                          companyData.departments?.filter(
+                            (_, i) => i !== index
+                          ) || [];
+                        setCompanyData((prev) => ({
+                          ...prev,
+                          departments: newDepartments,
+                        }));
+                      }
+                    }}
+                    className="text-red-500 hover:text-red-700 p-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {isMaster && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewDepartment({
+                    id: `D${String(
+                      (companyData.departments?.length || 0) + 1
+                    ).padStart(3, "0")}`,
+                    name: "",
+                    description: "",
+                  });
+                  setShowAddDepartmentModal(true);
+                }}
+                className="flex items-center justify-center p-4 border-2 border-dashed rounded-lg text-blue-600 hover:text-blue-800 hover:border-blue-300 transition-colors"
+                style={{ borderColor: THEME_COLORS.border }}
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                部門を追加
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Error/Success Messages */}
         {error && (
           <div
@@ -643,6 +762,169 @@ const CustomerMaster: React.FC = () => {
           </div>
         )}
       </form>
+
+      {/* 部門追加モーダル */}
+      {showAddDepartmentModal && (
+        <div className="fixed inset-0 overflow-y-auto h-full w-full z-50 bg-gray-500/30 backdrop-blur-sm">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium text-gray-900">
+                  新しい部門を追加
+                </h3>
+                <button
+                  onClick={() => setShowAddDepartmentModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    部門名{" "}
+                    <span style={{ color: THEME_COLORS.status.error }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newDepartment.name}
+                    onChange={(e) =>
+                      setNewDepartment((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4 mt-6">
+                <button
+                  onClick={() => setShowAddDepartmentModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={() => {
+                    if (!newDepartment.name) {
+                      setError("部門名は必須項目です");
+                      return;
+                    }
+                    setCompanyData((prev) => ({
+                      ...prev,
+                      departments: [...(prev.departments || []), newDepartment],
+                    }));
+                    setShowAddDepartmentModal(false);
+                    setSuccess("部門が追加されました");
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  追加
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 部門編集モーダル */}
+      {showEditDepartmentModal && (
+        <div className="fixed inset-0 overflow-y-auto h-full w-full z-50 bg-gray-500/30 backdrop-blur-sm">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium text-gray-900">
+                  部門情報を編集
+                </h3>
+                <button
+                  onClick={() => setShowEditDepartmentModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    部門名{" "}
+                    <span style={{ color: THEME_COLORS.status.error }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editDepartment.name}
+                    onChange={(e) =>
+                      setEditDepartment((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4 mt-6">
+                <button
+                  onClick={() => setShowEditDepartmentModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={() => {
+                    if (!editDepartment.name) {
+                      setError("部門名は必須項目です");
+                      return;
+                    }
+                    setCompanyData((prev) => ({
+                      ...prev,
+                      departments:
+                        prev.departments?.map((dept) =>
+                          dept.id === editDepartment.id ? editDepartment : dept
+                        ) || [],
+                    }));
+                    setShowEditDepartmentModal(false);
+                    setSuccess("部門情報が更新されました");
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  更新
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

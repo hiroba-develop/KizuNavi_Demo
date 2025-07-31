@@ -42,7 +42,7 @@ interface EmployeeAnswer {
 }
 
 const IndividualReport: React.FC = () => {
-  const { selectedPeriod, selectedCustomerId } = useCustomer();
+  const { selectedPeriod, selectedCustomerId, periods } = useCustomer();
   const { user } = useAuth();
   const { getQuestionsForCustomer } = useQuestions();
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -52,6 +52,8 @@ const IndividualReport: React.FC = () => {
   const [employeeAnswers, setEmployeeAnswers] = useState<EmployeeAnswer | null>(
     null
   );
+  const [comparisonAnswers, setComparisonAnswers] =
+    useState<EmployeeAnswer | null>(null);
   // const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -232,6 +234,7 @@ const IndividualReport: React.FC = () => {
       setEmployees(customerEmployees);
       setSelectedEmployee(null);
       setEmployeeAnswers(null);
+      setComparisonAnswers(null);
     }
   }, [selectedCustomerId]);
 
@@ -306,6 +309,59 @@ const IndividualReport: React.FC = () => {
     };
 
     setEmployeeAnswers(answers);
+
+    // 最新の実施日を選択している場合のみ、前回のデータを比較用に取得
+    if (selectedPeriod === periods[0].value && periods.length > 1) {
+      const previousPeriodMultiplier = 0.95;
+      const comparisonAnswers: EmployeeAnswer = {
+        employeeId: employee.employee_id,
+        employeeName: employee.employee_name,
+        submittedAt: periods[1].value,
+        answers: customerQuestions.map((q, index) => {
+          if (q.type === "rating") {
+            // 評定質問の場合
+            const baseAnswer = 3 + (index % 3); // 3-5の基本値
+            const variation = (employee.employee_id.charCodeAt(3) % 3) - 1; // -1,0,1の変動
+            const finalAnswer = Math.max(
+              1,
+              Math.min(
+                6,
+                Math.round(
+                  (baseAnswer + variation) * previousPeriodMultiplier * 10
+                ) / 10
+              )
+            );
+
+            return {
+              questionId: q.id,
+              questionText: q.text,
+              category: q.category,
+              note: q.note,
+              answer: finalAnswer,
+              answerText: getRatingAnswerText(finalAnswer),
+            };
+          } else {
+            // 自由記述質問の場合
+            const textAnswerIndex =
+              (employee.employee_id.charCodeAt(3) + index) %
+              sampleTextAnswers.length;
+
+            return {
+              questionId: q.id,
+              questionText: q.text,
+              category: q.category,
+              note: q.note,
+              answer: sampleTextAnswers[textAnswerIndex],
+              answerText: sampleTextAnswers[textAnswerIndex],
+            };
+          }
+        }),
+      };
+
+      setComparisonAnswers(comparisonAnswers);
+    } else {
+      setComparisonAnswers(null);
+    }
   };
 
   const getRatingText = (rating: number): string => {
@@ -451,46 +507,126 @@ const IndividualReport: React.FC = () => {
                         <div className="bg-gray-50 p-3 rounded-md">
                           {typeof answer.answer === "number" ? (
                             // 評定質問の場合
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <span className="text-sm text-gray-600">
-                                  回答:{" "}
-                                </span>
-                                <span
-                                  className={`font-semibold ${getRatingColor(
-                                    answer.answer
-                                  )}`}
-                                >
-                                  {answer.answer} -{" "}
-                                  {getRatingText(answer.answer)}
-                                </span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                {[1, 2, 3, 4, 5, 6].map((star) => (
-                                  <svg
-                                    key={star}
-                                    className={`w-4 h-4 ${
-                                      star <= (answer.answer as number)
-                                        ? "text-yellow-400"
-                                        : "text-gray-300"
-                                    }`}
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <span className="text-sm text-gray-600">
+                                    回答:{" "}
+                                  </span>
+                                  <span
+                                    className={`font-semibold ${getRatingColor(
+                                      answer.answer
+                                    )}`}
                                   >
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                  </svg>
-                                ))}
+                                    {answer.answer} -{" "}
+                                    {getRatingText(answer.answer)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  {[1, 2, 3, 4, 5, 6].map((star) => (
+                                    <svg
+                                      key={star}
+                                      className={`w-4 h-4 ${
+                                        star <= (answer.answer as number)
+                                          ? "text-yellow-400"
+                                          : "text-gray-300"
+                                      }`}
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                  ))}
+                                </div>
                               </div>
+                              {comparisonAnswers?.answers.find(
+                                (a) => a.questionId === answer.questionId
+                              ) && (
+                                <div
+                                  className="flex items-center justify-between pt-2 border-t"
+                                  style={{ borderColor: THEME_COLORS.border }}
+                                >
+                                  <div>
+                                    <span className="text-sm text-gray-400">
+                                      前回の回答:{" "}
+                                    </span>
+                                    <span
+                                      className={`font-semibold ${getRatingColor(
+                                        comparisonAnswers.answers.find(
+                                          (a) =>
+                                            a.questionId === answer.questionId
+                                        )?.answer as number
+                                      )}`}
+                                    >
+                                      {
+                                        comparisonAnswers.answers.find(
+                                          (a) =>
+                                            a.questionId === answer.questionId
+                                        )?.answer
+                                      }{" "}
+                                      -{" "}
+                                      {getRatingText(
+                                        comparisonAnswers.answers.find(
+                                          (a) =>
+                                            a.questionId === answer.questionId
+                                        )?.answer as number
+                                      )}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center space-x-1">
+                                    {[1, 2, 3, 4, 5, 6].map((star) => (
+                                      <svg
+                                        key={star}
+                                        className={`w-4 h-4 ${
+                                          star <=
+                                          (comparisonAnswers.answers.find(
+                                            (a) =>
+                                              a.questionId === answer.questionId
+                                          )?.answer as number)
+                                            ? "text-yellow-400"
+                                            : "text-gray-300"
+                                        }`}
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                      >
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                      </svg>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           ) : (
                             // 自由記述質問の場合
-                            <div>
-                              <span className="text-sm text-gray-600 block mb-2">
-                                回答:{" "}
-                              </span>
-                              <div className="text-gray-800 leading-relaxed whitespace-pre-wrap">
-                                {answer.answer}
+                            <div className="space-y-4">
+                              <div>
+                                <span className="text-sm text-gray-600 block mb-2">
+                                  回答:{" "}
+                                </span>
+                                <div className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                  {answer.answer}
+                                </div>
                               </div>
+                              {comparisonAnswers?.answers.find(
+                                (a) => a.questionId === answer.questionId
+                              ) && (
+                                <div
+                                  className="pt-2 border-t"
+                                  style={{ borderColor: THEME_COLORS.border }}
+                                >
+                                  <span className="text-sm text-gray-400 block mb-2">
+                                    前回の回答:{" "}
+                                  </span>
+                                  <div className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                    {
+                                      comparisonAnswers.answers.find(
+                                        (a) =>
+                                          a.questionId === answer.questionId
+                                      )?.answer
+                                    }
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

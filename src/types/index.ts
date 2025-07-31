@@ -64,7 +64,14 @@ export interface Company {
   contractDate: string;
   paymentCycle: string;
   salesPersonIds: string[];
+  departments: Department[];
   employees: Employee[];
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  description?: string;
 }
 
 export interface Employee {
